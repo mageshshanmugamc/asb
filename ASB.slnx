@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="ASB.Admin/ASB.Admin.csproj" />
+  <Project Path="ASB.Authorization/ASB.Authorization.csproj" />
+  <Project Path="ASB.ErrorHandler/ASB.ErrorHandler.csproj" />
+  <Project Path="ASB.Repositories/ASB.Repositories.csproj" />
+  <Project Path="ASB.Services/ASB.Services.csproj" />
+</Solution>

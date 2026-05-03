@@ -1,0 +1,143 @@
+services:
+  asb-sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: asb-sqlserver
+    hostname: asb-sqlserver
+    environment:
+      SA_PASSWORD: "admin123!"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P admin123! -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    networks:
+      - asb-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1
+    container_name: keycloak
+    depends_on:
+      asb-sqlserver:
+        condition: service_healthy
+      sql-init:
+        condition: service_completed_successfully
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: mssql
+      KC_DB_URL: "jdbc:sqlserver://asb-sqlserver:1433;databaseName=keycloakdb;encrypt=true;trustServerCertificate=true"
+      KC_DB_USERNAME: keycloak_user
+      KC_DB_PASSWORD: "KeycloakUser@123"
+      KC_HOSTNAME: http://localhost:5000/keycloak
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_HTTP_RELATIVE_PATH: /keycloak
+      KC_PROXY_HEADERS: xforwarded
+    ports:
+      - "8080:8080"
+    networks:
+      - asb-network
+
+  asb-ui:
+    image: asb-ui:latest
+    pull_policy: never
+    container_name: asb-ui
+    ports:
+      - "3001:80"
+    networks:
+      - asb-network
+
+  asb-api:
+    image: asb-api:latest
+    pull_policy: never
+    container_name: asb-api
+    depends_on:
+      asb-sqlserver:
+        condition: service_healthy
+      sql-init:
+        condition: service_completed_successfully
+    environment:
+      ConnectionStrings__AsbDatabase: "Server=asb-sqlserver;Database=asbdb;User Id=sa;Password=admin123!;TrustServerCertificate=True;"
+      Keycloak__Authority: "http://keycloak:8080/realms/asb-keycloak"
+      Keycloak__ClientId: "asb-oidc-provider"
+      Keycloak__RequireHttpsMetadata: "false"
+      Keycloak__AdminBaseUrl: "http://keycloak:8080"
+      Keycloak__AdminRealm: "asb-keycloak"
+      Keycloak__AdminUsername: "admin"
+      Keycloak__AdminPassword: "admin"
+      Jwt__Secret: "Asb@2026!SecureTokenSigningKey#WithEnoughLength"
+    ports:
+      - "4000:8080"
+    networks:
+      - asb-network
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    depends_on:
+      - keycloak
+      - asb-ui
+      - asb-api
+    ports:
+      - "5000:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - asb-network
+
+  sql-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    depends_on:
+      asb-sqlserver:
+        condition: service_healthy
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        echo "Waiting for SQL Server to be fully ready...";
+        for i in $(seq 1 30); do
+          /opt/mssql-tools18/bin/sqlcmd -C -S asb-sqlserver -U sa -P 'admin123!' -Q 'SELECT 1' > /dev/null 2>&1 && break;
+          echo "Attempt $$i: SQL Server not ready, retrying in 2s...";
+          sleep 2;
+        done;
+        echo "Running init scripts...";
+        /opt/mssql-tools18/bin/sqlcmd -C -S asb-sqlserver -U sa -P 'admin123!' -Q "
+          IF DB_ID('asbdb') IS NULL CREATE DATABASE asbdb;
+          IF DB_ID('keycloakdb') IS NULL CREATE DATABASE keycloakdb;
+        ";
+        /opt/mssql-tools18/bin/sqlcmd -C -S asb-sqlserver -U sa -P 'admin123!' -Q "
+          IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = 'banking_user')
+            CREATE LOGIN banking_user WITH PASSWORD = 'BankingUser@123';
+          ALTER LOGIN banking_user WITH PASSWORD = 'BankingUser@123';
+          IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = 'keycloak_user')
+            CREATE LOGIN keycloak_user WITH PASSWORD = 'KeycloakUser@123';
+          ALTER LOGIN keycloak_user WITH PASSWORD = 'KeycloakUser@123';
+        ";
+        /opt/mssql-tools18/bin/sqlcmd -C -S asb-sqlserver -U sa -P 'admin123!' -d asbdb -Q "
+          IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = 'banking_user')
+            CREATE USER banking_user FOR LOGIN banking_user;
+          IF IS_ROLEMEMBER('db_owner', 'banking_user') <> 1
+            ALTER ROLE db_owner ADD MEMBER banking_user;
+        ";
+        /opt/mssql-tools18/bin/sqlcmd -C -S asb-sqlserver -U sa -P 'admin123!' -d keycloakdb -Q "
+          IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = 'keycloak_user')
+            CREATE USER keycloak_user FOR LOGIN keycloak_user;
+          IF IS_ROLEMEMBER('db_owner', 'keycloak_user') <> 1
+            ALTER ROLE db_owner ADD MEMBER keycloak_user;
+        ";
+        echo "SQL init completed successfully.";
+    restart: "no"
+    networks:
+      - asb-network
+
+volumes:
+  sql_data:
+
+networks:
+  asb-network:
+    driver: bridge

@@ -1,0 +1,6 @@
+@ASB.Admin_HostAddress = http://localhost:5057
+
+GET {{ASB.Admin_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
