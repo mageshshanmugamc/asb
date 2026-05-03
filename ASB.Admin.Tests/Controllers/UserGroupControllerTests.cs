@@ -163,4 +163,60 @@ public class UserGroupControllerTests
         Assert.Single(returnedGroup.Users);
         Assert.Single(returnedGroup.Roles);
     }
+
+    [Fact]
+    public async Task Create_WithRoleIds_PassesRoleIdsToService()
+    {
+        var request = new CreateUserGroupRequest { GroupName = "DevTeam", RoleIds = [1, 3] };
+
+        _userGroupServiceMock
+            .Setup(s => s.CreateAsync(It.IsAny<CreateUserGroupDto>()))
+            .ReturnsAsync(new UserGroupDto { Id = 10, GroupName = "DevTeam", Users = [], Roles = [] });
+
+        await _controller.Create(request);
+
+        _userGroupServiceMock.Verify(
+            s => s.CreateAsync(It.Is<CreateUserGroupDto>(d =>
+                d.GroupName == "DevTeam" && d.RoleIds.Count == 2 && d.RoleIds.Contains(1) && d.RoleIds.Contains(3))),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Update_ValidRequest_ReturnsOk()
+    {
+        var request = new UpdateUserGroupRequest { GroupName = "UpdatedGroup", RoleIds = [2, 4] };
+        var updatedGroup = new UserGroupDto
+        {
+            Id = 1, GroupName = "UpdatedGroup", Users = [],
+            Roles = [new RoleDto { Id = 2, Name = "Editor" }, new RoleDto { Id = 4, Name = "Viewer" }]
+        };
+
+        _userGroupServiceMock
+            .Setup(s => s.UpdateAsync(1, It.IsAny<UpdateUserGroupDto>()))
+            .ReturnsAsync(updatedGroup);
+
+        var result = await _controller.Update(1, request);
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var returnedGroup = Assert.IsType<UserGroupDto>(okResult.Value);
+        Assert.Equal("UpdatedGroup", returnedGroup.GroupName);
+        Assert.Equal(2, returnedGroup.Roles.Count);
+    }
+
+    [Fact]
+    public async Task Update_PassesCorrectDtoToService()
+    {
+        var request = new UpdateUserGroupRequest { GroupName = "Renamed", RoleIds = [5] };
+
+        _userGroupServiceMock
+            .Setup(s => s.UpdateAsync(7, It.IsAny<UpdateUserGroupDto>()))
+            .ReturnsAsync(new UserGroupDto { Id = 7, GroupName = "Renamed", Users = [], Roles = [] });
+
+        await _controller.Update(7, request);
+
+        _userGroupServiceMock.Verify(
+            s => s.UpdateAsync(7, It.Is<UpdateUserGroupDto>(d =>
+                d.GroupName == "Renamed" && d.RoleIds.Count == 1 && d.RoleIds.Contains(5))),
+            Times.Once);
+    }
 }

@@ -28,9 +28,25 @@ namespace ASB.Services.v1.Implementations
 
         public async Task<UserGroupDto> CreateAsync(CreateUserGroupDto dto)
         {
-            var group = new UserGroup { GroupName = dto.GroupName };
+            var group = new UserGroup
+            {
+                GroupName = dto.GroupName,
+                UserGroupRoles = dto.RoleIds.Select(roleId => new UserGroupRole { RoleId = roleId }).ToList()
+            };
             var created = await _userGroupRepository.CreateAsync(group);
             return MapToDto(created);
+        }
+
+        public async Task<UserGroupDto> UpdateAsync(int id, UpdateUserGroupDto dto)
+        {
+            var group = new UserGroup
+            {
+                Id = id,
+                GroupName = dto.GroupName,
+                UserGroupRoles = dto.RoleIds.Select(roleId => new UserGroupRole { RoleId = roleId }).ToList()
+            };
+            var updated = await _userGroupRepository.UpdateAsync(group);
+            return MapToDto(updated);
         }
 
         public async Task AddUserToGroupAsync(int userId, int groupId)

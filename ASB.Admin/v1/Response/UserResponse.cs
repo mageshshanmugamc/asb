@@ -24,7 +24,7 @@ namespace ASB.Admin.v1.Response
         /// <summary> The email address of the user. This is used for communication and may also be used for authentication purposes. It should be unique across all users in the system. </summary>
         /// <value>The email address of the user.</value>
         public required string Email { get; set; }  
-        public int? UserGroupId { get; set; }
+        public List<int> UserGroupIds { get; set; } = [];
 
 
         public static UserResponse DtoToUsers(UserDto userDto)
@@ -34,7 +34,7 @@ namespace ASB.Admin.v1.Response
                 Id = userDto.Id,
                 Username = userDto.Username,
                 Email = userDto.Email,
-                UserGroupId = userDto.UserGroupId
+                UserGroupIds = userDto.UserGroupIds
             };
         }
 
@@ -48,7 +48,7 @@ namespace ASB.Admin.v1.Response
                 Id = dto.Id,
                 Username = dto.Username,
                 Email = dto.Email,
-                UserGroupId = dto.UserGroupId
+                UserGroupIds = dto.UserGroupIds
             }).ToList();
 
             return userModels;

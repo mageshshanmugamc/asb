@@ -7,6 +7,7 @@ namespace ASB.Services.v1.Interfaces
         Task<IEnumerable<UserGroupDto>> GetAllAsync();
         Task<UserGroupDto?> GetByIdAsync(int id);
         Task<UserGroupDto> CreateAsync(CreateUserGroupDto dto);
+        Task<UserGroupDto> UpdateAsync(int id, UpdateUserGroupDto dto);
         Task AddUserToGroupAsync(int userId, int groupId);
         Task AssignRoleToGroupAsync(int groupId, int roleId);
     }

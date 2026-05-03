@@ -42,11 +42,26 @@ namespace ASB.Admin.v1.Controllers
         {
             var dto = new ASB.Services.v1.Dtos.CreateUserGroupDto
             {
-                GroupName = request.GroupName
+                GroupName = request.GroupName,
+                RoleIds = request.RoleIds
             };
 
             var group = await _userGroupService.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = group.Id }, group);
+        }
+
+        [HttpPut("{id}")]
+        [Authorize(Policy = Policies.ManageUsers)]
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateUserGroupRequest request)
+        {
+            var dto = new ASB.Services.v1.Dtos.UpdateUserGroupDto
+            {
+                GroupName = request.GroupName,
+                RoleIds = request.RoleIds
+            };
+
+            var group = await _userGroupService.UpdateAsync(id, dto);
+            return Ok(group);
         }
 
         [HttpPost("{groupId}/users/{userId}")]

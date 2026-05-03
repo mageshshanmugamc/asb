@@ -17,6 +17,6 @@ namespace ASB.Admin.v1.Models
         /// The email address of the user. This is used for communication and may also be used for authentication purposes. It should be unique across all users in the system.
         /// </summary>
         public required string Email { get; set; }
-        public int? UserGroupId { get; set; }
+        public List<int> UserGroupIds { get; set; } = [];
     }
 }

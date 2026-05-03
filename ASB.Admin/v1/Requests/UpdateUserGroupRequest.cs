@@ -1,6 +1,6 @@
-namespace ASB.Services.v1.Dtos
+namespace ASB.Admin.v1.Requests
 {
-    public class CreateUserGroupDto
+    public class UpdateUserGroupRequest
     {
         public required string GroupName { get; set; }
         public List<int> RoleIds { get; set; } = [];

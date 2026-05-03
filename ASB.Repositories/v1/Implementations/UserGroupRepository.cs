@@ -38,7 +38,32 @@ namespace ASB.Repositories.v1.Implementations
         {
             _context.UserGroups.Add(userGroup);
             await _context.SaveChangesAsync();
-            return userGroup;
+            return await GetByIdAsync(userGroup.Id) ?? userGroup;
+        }
+
+        public async Task<UserGroup> UpdateAsync(UserGroup userGroup)
+        {
+            var existing = await _context.UserGroups
+                .Include(ug => ug.UserGroupRoles)
+                .FirstOrDefaultAsync(ug => ug.Id == userGroup.Id)
+                ?? throw new KeyNotFoundException($"UserGroup with Id {userGroup.Id} not found.");
+
+            existing.GroupName = userGroup.GroupName;
+
+            // Replace role assignments
+            _context.UserGroupRoles.RemoveRange(existing.UserGroupRoles);
+            foreach (var ugr in userGroup.UserGroupRoles)
+            {
+                existing.UserGroupRoles.Add(new UserGroupRole
+                {
+                    UserGroupId = existing.Id,
+                    RoleId = ugr.RoleId
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
+            return await GetByIdAsync(existing.Id) ?? existing;
         }
 
         public async Task AddUserToGroupAsync(int userId, int groupId)

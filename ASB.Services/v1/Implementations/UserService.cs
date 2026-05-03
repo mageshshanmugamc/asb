@@ -25,7 +25,7 @@ namespace ASB.Services.v1.Implementations
                     Id = user.Id,
                     Username = user.Username,
                     Email = user.Email,
-                    UserGroupId = user.UserGroupMappings.FirstOrDefault()?.UserGroupId
+                    UserGroupIds = user.UserGroupMappings.Select(ugm => ugm.UserGroupId).ToList()
                 });
             }
             return userDtos;
@@ -45,13 +45,18 @@ namespace ASB.Services.v1.Implementations
             };
 
             var created = await _userRepository.CreateUserAsync(user);
-            await _userRepository.AddUserToGroupAsync(created.Id, dto.UserGroupId);
+
+            foreach (var groupId in dto.UserGroupIds)
+            {
+                await _userRepository.AddUserToGroupAsync(created.Id, groupId);
+            }
 
             return new UserDto
             {
                 Id = created.Id,
                 Username = created.Username,
-                Email = created.Email
+                Email = created.Email,
+                UserGroupIds = dto.UserGroupIds
             };
         }
 

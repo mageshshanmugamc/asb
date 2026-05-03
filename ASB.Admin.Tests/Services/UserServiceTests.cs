@@ -23,7 +23,7 @@ public class UserServiceTests
     {
         var users = new List<User>
         {
-            new() { Id = 1, Username = "user1", Email = "u1@test.com", UserGroupMappings = [new UserGroupMapping { UserGroupId = 1 }] },
+            new() { Id = 1, Username = "user1", Email = "u1@test.com", UserGroupMappings = [new UserGroupMapping { UserGroupId = 1 }, new UserGroupMapping { UserGroupId = 3 }] },
             new() { Id = 2, Username = "user2", Email = "u2@test.com", UserGroupMappings = [] }
         };
 
@@ -33,8 +33,10 @@ public class UserServiceTests
 
         Assert.Equal(2, result.Count);
         Assert.Equal("user1", result[0].Username);
-        Assert.Equal(1, result[0].UserGroupId);
-        Assert.Null(result[1].UserGroupId);
+        Assert.Equal(2, result[0].UserGroupIds.Count);
+        Assert.Contains(1, result[0].UserGroupIds);
+        Assert.Contains(3, result[0].UserGroupIds);
+        Assert.Empty(result[1].UserGroupIds);
     }
 
     [Fact]
@@ -50,7 +52,7 @@ public class UserServiceTests
     [Fact]
     public async Task CreateUserAsync_ValidDto_ReturnsCreatedUser()
     {
-        var dto = new CreateUserDto { Username = "newuser", Email = "new@test.com", UserGroupId = 3 };
+        var dto = new CreateUserDto { Username = "newuser", Email = "new@test.com", UserGroupIds = [3] };
 
         _userRepositoryMock.Setup(r => r.GetUserByEmailAsync("new@test.com")).ReturnsAsync((User?)null);
         _userRepositoryMock.Setup(r => r.CreateUserAsync(It.IsAny<User>()))
@@ -62,31 +64,50 @@ public class UserServiceTests
         Assert.Equal(10, result.Id);
         Assert.Equal("newuser", result.Username);
         Assert.Equal("new@test.com", result.Email);
+        Assert.Single(result.UserGroupIds);
+        Assert.Contains(3, result.UserGroupIds);
+    }
+
+    [Fact]
+    public async Task CreateUserAsync_MultipleGroups_CallsAddForEach()
+    {
+        var dto = new CreateUserDto { Username = "u", Email = "u@t.com", UserGroupIds = [2, 5, 8] };
+
+        _userRepositoryMock.Setup(r => r.GetUserByEmailAsync("u@t.com")).ReturnsAsync((User?)null);
+        _userRepositoryMock.Setup(r => r.CreateUserAsync(It.IsAny<User>()))
+            .ReturnsAsync(new User { Id = 20, Username = "u", Email = "u@t.com" });
+        _userRepositoryMock.Setup(r => r.AddUserToGroupAsync(It.IsAny<int>(), It.IsAny<int>(), null)).Returns(Task.CompletedTask);
+
+        await _service.CreateUserAsync(dto);
+
+        _userRepositoryMock.Verify(r => r.AddUserToGroupAsync(20, 2, null), Times.Once);
+        _userRepositoryMock.Verify(r => r.AddUserToGroupAsync(20, 5, null), Times.Once);
+        _userRepositoryMock.Verify(r => r.AddUserToGroupAsync(20, 8, null), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateUserAsync_EmptyGroupIds_DoesNotCallAddToGroup()
+    {
+        var dto = new CreateUserDto { Username = "u", Email = "u@t.com", UserGroupIds = [] };
+
+        _userRepositoryMock.Setup(r => r.GetUserByEmailAsync("u@t.com")).ReturnsAsync((User?)null);
+        _userRepositoryMock.Setup(r => r.CreateUserAsync(It.IsAny<User>()))
+            .ReturnsAsync(new User { Id = 30, Username = "u", Email = "u@t.com" });
+
+        await _service.CreateUserAsync(dto);
+
+        _userRepositoryMock.Verify(r => r.AddUserToGroupAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
     public async Task CreateUserAsync_DuplicateEmail_ThrowsInvalidOperation()
     {
-        var dto = new CreateUserDto { Username = "dup", Email = "exists@test.com", UserGroupId = 1 };
+        var dto = new CreateUserDto { Username = "dup", Email = "exists@test.com", UserGroupIds = [1] };
 
         _userRepositoryMock.Setup(r => r.GetUserByEmailAsync("exists@test.com"))
             .ReturnsAsync(new User { Id = 5, Username = "existing", Email = "exists@test.com" });
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => _service.CreateUserAsync(dto));
-    }
-
-    [Fact]
-    public async Task CreateUserAsync_CallsAddUserToGroup()
-    {
-        var dto = new CreateUserDto { Username = "u", Email = "u@t.com", UserGroupId = 7 };
-
-        _userRepositoryMock.Setup(r => r.GetUserByEmailAsync("u@t.com")).ReturnsAsync((User?)null);
-        _userRepositoryMock.Setup(r => r.CreateUserAsync(It.IsAny<User>()))
-            .ReturnsAsync(new User { Id = 20, Username = "u", Email = "u@t.com" });
-
-        await _service.CreateUserAsync(dto);
-
-        _userRepositoryMock.Verify(r => r.AddUserToGroupAsync(20, 7, null), Times.Once);
     }
 
     [Fact]

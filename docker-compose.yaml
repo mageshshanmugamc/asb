@@ -18,14 +18,50 @@ services:
     networks:
       - asb-network
 
+  asb-neo4j:
+    image: neo4j:5-community
+    container_name: asb-neo4j
+    hostname: asb-neo4j
+    environment:
+      NEO4J_AUTH: neo4j/neo4jpassword
+      NEO4J_PLUGINS: '[]'
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p neo4jpassword 'RETURN 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    networks:
+      - asb-network
+
+  neo4j-init:
+    image: neo4j:5-community
+    profiles: ["init"]
+    depends_on:
+      asb-neo4j:
+        condition: service_healthy
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        echo "Seeding Neo4j...";
+        grep -v '^//' /seed/neo4j_init.cypher | cypher-shell -u neo4j -p neo4jpassword -a bolt://asb-neo4j:7687 --non-interactive --format plain;
+        echo "Neo4j seed completed successfully.";
+    volumes:
+      - ./neo4j_init.cypher:/seed/neo4j_init.cypher:ro
+    restart: "no"
+    networks:
+      - asb-network
+
   keycloak:
     image: quay.io/keycloak/keycloak:26.1
     container_name: keycloak
     depends_on:
       asb-sqlserver:
         condition: service_healthy
-      sql-init:
-        condition: service_completed_successfully
     command: start-dev
     environment:
       KEYCLOAK_ADMIN: admin
@@ -60,8 +96,8 @@ services:
     depends_on:
       asb-sqlserver:
         condition: service_healthy
-      sql-init:
-        condition: service_completed_successfully
+      asb-neo4j:
+        condition: service_healthy
     environment:
       ConnectionStrings__AsbDatabase: "Server=asb-sqlserver;Database=asbdb;User Id=sa;Password=admin123!;TrustServerCertificate=True;"
       Keycloak__Authority: "http://keycloak:8080/realms/asb-keycloak"
@@ -72,6 +108,10 @@ services:
       Keycloak__AdminUsername: "admin"
       Keycloak__AdminPassword: "admin"
       Jwt__Secret: "Asb@2026!SecureTokenSigningKey#WithEnoughLength"
+      DatabaseProvider: "Neo4j"
+      Neo4j__Uri: "bolt://asb-neo4j:7687"
+      Neo4j__Username: "neo4j"
+      Neo4j__Password: "neo4jpassword"
     ports:
       - "4000:8080"
     networks:
@@ -93,6 +133,7 @@ services:
 
   sql-init:
     image: mcr.microsoft.com/mssql/server:2022-latest
+    profiles: ["init"]
     depends_on:
       asb-sqlserver:
         condition: service_healthy
@@ -137,6 +178,7 @@ services:
 
 volumes:
   sql_data:
+  neo4j_data:
 
 networks:
   asb-network:

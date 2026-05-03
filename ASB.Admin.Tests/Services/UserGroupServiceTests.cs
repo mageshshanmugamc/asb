@@ -144,4 +144,63 @@ public class UserGroupServiceTests
         Assert.Single(result.Roles);
         Assert.Equal("Manager", result.Roles[0].Name);
     }
+
+    [Fact]
+    public async Task CreateAsync_WithRoleIds_PassesRolesToRepository()
+    {
+        var dto = new CreateUserGroupDto { GroupName = "DevTeam", RoleIds = [1, 3] };
+
+        _userGroupRepoMock
+            .Setup(r => r.CreateAsync(It.Is<UserGroup>(g =>
+                g.GroupName == "DevTeam" && g.UserGroupRoles.Count == 2)))
+            .ReturnsAsync(new UserGroup
+            {
+                Id = 10, GroupName = "DevTeam", UserGroupMappings = [],
+                UserGroupRoles = [
+                    new UserGroupRole { RoleId = 1, Role = new Role { Id = 1, Name = "Admin" } },
+                    new UserGroupRole { RoleId = 3, Role = new Role { Id = 3, Name = "Editor" } }
+                ]
+            });
+
+        var result = await _service.CreateAsync(dto);
+
+        Assert.Equal(2, result.Roles.Count);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ValidDto_ReturnsUpdatedGroup()
+    {
+        var dto = new UpdateUserGroupDto { GroupName = "Updated", RoleIds = [2] };
+
+        _userGroupRepoMock
+            .Setup(r => r.UpdateAsync(It.Is<UserGroup>(g =>
+                g.Id == 5 && g.GroupName == "Updated" && g.UserGroupRoles.Count == 1)))
+            .ReturnsAsync(new UserGroup
+            {
+                Id = 5, GroupName = "Updated", UserGroupMappings = [],
+                UserGroupRoles = [new UserGroupRole { RoleId = 2, Role = new Role { Id = 2, Name = "Viewer" } }]
+            });
+
+        var result = await _service.UpdateAsync(5, dto);
+
+        Assert.Equal(5, result.Id);
+        Assert.Equal("Updated", result.GroupName);
+        Assert.Single(result.Roles);
+        Assert.Equal("Viewer", result.Roles[0].Name);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_EmptyRoleIds_ClearsRoles()
+    {
+        var dto = new UpdateUserGroupDto { GroupName = "NoRoles", RoleIds = [] };
+
+        _userGroupRepoMock
+            .Setup(r => r.UpdateAsync(It.Is<UserGroup>(g =>
+                g.Id == 3 && g.UserGroupRoles.Count == 0)))
+            .ReturnsAsync(new UserGroup { Id = 3, GroupName = "NoRoles", UserGroupMappings = [], UserGroupRoles = [] });
+
+        var result = await _service.UpdateAsync(3, dto);
+
+        Assert.Empty(result.Roles);
+    }
 }

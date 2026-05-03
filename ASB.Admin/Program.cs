@@ -1,14 +1,9 @@
 using Microsoft.OpenApi;
 using Serilog;
-using ASB.Services.v1.Interfaces;
-using ASB.Services.v1.Implementations;
-using Microsoft.EntityFrameworkCore;
-using ASB.Repositories.v1.Contexts;
-using ASB.Repositories.v1.Interfaces;
-using ASB.Repositories.v1.Implementations;
+using ASB.Services.v1;
+using ASB.Repositories.v1;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using ASB.Admin.v1.Infrastructure;
 using ASB.Authorization;
 
 
@@ -28,15 +23,8 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog(); // replace default logger
 
-builder.Services.AddDbContext<AsbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("AsbDatabase"),
-        b => b.MigrationsAssembly("ASB.Admin")
-           .EnableRetryOnFailure(
-                maxRetryCount: 5,
-                maxRetryDelay: TimeSpan.FromSeconds(10),
-                errorNumbersToAdd: null))
-        );
+// Register database provider (SqlServer or Neo4j) based on config
+builder.Services.AddDatabase(builder.Configuration);
 
 
 builder.Services.AddControllers();
@@ -51,14 +39,7 @@ builder.Services.AddCors(options =>
 });
 
 
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IUserGroupService, UserGroupService>();
-builder.Services.AddScoped<IUserGroupRepository, UserGroupRepository>();
-builder.Services.AddScoped<IAuthTokenService, AuthTokenService>();
-builder.Services.AddScoped<IMenuRepository, MenuRepository>();
-builder.Services.AddScoped<IKeycloakUserProvisioningService, KeycloakUserProvisioningService>();
-builder.Services.AddHttpClient<IKeycloakAdminService, KeycloakAdminService>();
+builder.Services.AddApplicationServices();
 
 // Register policy-based authorization
 builder.Services.AddPolicyAuthorization();

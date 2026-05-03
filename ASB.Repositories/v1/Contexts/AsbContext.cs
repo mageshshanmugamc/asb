@@ -97,6 +97,7 @@ namespace ASB.Repositories.v1.Contexts
                 new Menu { Id = 6, Name = "Users", Route = "/users/list", Icon = "person", DisplayOrder = 1, ParentMenuId = 2 },
                 new Menu { Id = 7, Name = "Groups", Route = "/users/groups", Icon = "group", DisplayOrder = 2, ParentMenuId = 2 },
                 new Menu { Id = 8, Name = "Roles", Route = "/users/roles", Icon = "admin_panel_settings", DisplayOrder = 3, ParentMenuId = 2 },
+                new Menu { Id = 13, Name = "Policies", Route = "/users/policies", Icon = "policy", DisplayOrder = 4, ParentMenuId = 2 },
 
                 // Reports children
                 new Menu { Id = 9, Name = "Activity Report", Route = "/reports/activity", Icon = "assessment", DisplayOrder = 1, ParentMenuId = 3 },
@@ -121,7 +122,8 @@ namespace ASB.Repositories.v1.Contexts
                 new RoleMenuPermission { RoleId = 1, MenuId = 9 },
                 new RoleMenuPermission { RoleId = 1, MenuId = 10 },
                 new RoleMenuPermission { RoleId = 1, MenuId = 11 },
-                new RoleMenuPermission { RoleId = 1, MenuId = 12 }
+                new RoleMenuPermission { RoleId = 1, MenuId = 12 },
+                new RoleMenuPermission { RoleId = 1, MenuId = 13 }
             );
             // Viewer → Dashboard only
             modelBuilder.Entity<RoleMenuPermission>().HasData(
@@ -135,6 +137,7 @@ namespace ASB.Repositories.v1.Contexts
                 new RoleMenuPermission { RoleId = 3, MenuId = 6 },
                 new RoleMenuPermission { RoleId = 3, MenuId = 7 },
                 new RoleMenuPermission { RoleId = 3, MenuId = 8 },
+                new RoleMenuPermission { RoleId = 3, MenuId = 13 },
                 new RoleMenuPermission { RoleId = 3, MenuId = 11 },
                 new RoleMenuPermission { RoleId = 3, MenuId = 12 }
             );
