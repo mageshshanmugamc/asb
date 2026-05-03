@@ -105,7 +105,8 @@ namespace ASB.Repositories.v1.Contexts
 
                 // Settings children
                 new Menu { Id = 11, Name = "General", Route = "/settings/general", Icon = "tune", DisplayOrder = 1, ParentMenuId = 4 },
-                new Menu { Id = 12, Name = "Security", Route = "/settings/security", Icon = "lock", DisplayOrder = 2, ParentMenuId = 4 }
+                new Menu { Id = 12, Name = "Security", Route = "/settings/security", Icon = "lock", DisplayOrder = 2, ParentMenuId = 4 },
+                new Menu { Id = 14, Name = "Menus", Route = "/settings/menus", Icon = "menu", DisplayOrder = 3, ParentMenuId = 4 }
             );
 
             // Seed RoleMenuPermissions
@@ -123,7 +124,8 @@ namespace ASB.Repositories.v1.Contexts
                 new RoleMenuPermission { RoleId = 1, MenuId = 10 },
                 new RoleMenuPermission { RoleId = 1, MenuId = 11 },
                 new RoleMenuPermission { RoleId = 1, MenuId = 12 },
-                new RoleMenuPermission { RoleId = 1, MenuId = 13 }
+                new RoleMenuPermission { RoleId = 1, MenuId = 13 },
+                new RoleMenuPermission { RoleId = 1, MenuId = 14 }
             );
             // Viewer → Dashboard only
             modelBuilder.Entity<RoleMenuPermission>().HasData(
@@ -139,7 +141,8 @@ namespace ASB.Repositories.v1.Contexts
                 new RoleMenuPermission { RoleId = 3, MenuId = 8 },
                 new RoleMenuPermission { RoleId = 3, MenuId = 13 },
                 new RoleMenuPermission { RoleId = 3, MenuId = 11 },
-                new RoleMenuPermission { RoleId = 3, MenuId = 12 }
+                new RoleMenuPermission { RoleId = 3, MenuId = 12 },
+                new RoleMenuPermission { RoleId = 3, MenuId = 14 }
             );
             // Auditor → Dashboard, Reports, Audit Logs
             modelBuilder.Entity<RoleMenuPermission>().HasData(

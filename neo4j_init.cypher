@@ -44,6 +44,7 @@ MERGE (:Menu {id: 9, name: 'Activity Report', route: '/reports/activity', icon: 
 MERGE (:Menu {id: 10, name: 'Access Report', route: '/reports/access', icon: 'security', displayOrder: 2, parentMenuId: 3});
 MERGE (:Menu {id: 11, name: 'General', route: '/settings/general', icon: 'tune', displayOrder: 1, parentMenuId: 4});
 MERGE (:Menu {id: 12, name: 'Security', route: '/settings/security', icon: 'lock', displayOrder: 2, parentMenuId: 4});
+MERGE (:Menu {id: 14, name: 'Menus', route: '/settings/menus', icon: 'menu', displayOrder: 3, parentMenuId: 4});
 
 // ── Menu hierarchy (CHILD_OF) ────────────────────────────────────────
 MATCH (child:Menu {id: 6}), (parent:Menu {id: 2}) MERGE (child)-[:CHILD_OF]->(parent);
@@ -54,6 +55,7 @@ MATCH (child:Menu {id: 9}), (parent:Menu {id: 3}) MERGE (child)-[:CHILD_OF]->(pa
 MATCH (child:Menu {id: 10}), (parent:Menu {id: 3}) MERGE (child)-[:CHILD_OF]->(parent);
 MATCH (child:Menu {id: 11}), (parent:Menu {id: 4}) MERGE (child)-[:CHILD_OF]->(parent);
 MATCH (child:Menu {id: 12}), (parent:Menu {id: 4}) MERGE (child)-[:CHILD_OF]->(parent);
+MATCH (child:Menu {id: 14}), (parent:Menu {id: 4}) MERGE (child)-[:CHILD_OF]->(parent);
 
 // ── User → UserGroup (MEMBER_OF) ────────────────────────────────────
 MATCH (u:User {id: 1}), (g:UserGroup {id: 1})
@@ -88,6 +90,7 @@ MATCH (r:Role {id: 1}), (m:Menu {id: 10}) MERGE (r)-[:HAS_MENU_PERMISSION {permi
 MATCH (r:Role {id: 1}), (m:Menu {id: 11}) MERGE (r)-[:HAS_MENU_PERMISSION {permissionLevel: 'View'}]->(m);
 MATCH (r:Role {id: 1}), (m:Menu {id: 12}) MERGE (r)-[:HAS_MENU_PERMISSION {permissionLevel: 'View'}]->(m);
 MATCH (r:Role {id: 1}), (m:Menu {id: 13}) MERGE (r)-[:HAS_MENU_PERMISSION {permissionLevel: 'View'}]->(m);
+MATCH (r:Role {id: 1}), (m:Menu {id: 14}) MERGE (r)-[:HAS_MENU_PERMISSION {permissionLevel: 'View'}]->(m);
 
 // Viewer (role 2) → Dashboard only
 MATCH (r:Role {id: 2}), (m:Menu {id: 1}) MERGE (r)-[:HAS_MENU_PERMISSION {permissionLevel: 'View'}]->(m);
@@ -102,6 +105,7 @@ MATCH (r:Role {id: 3}), (m:Menu {id: 8}) MERGE (r)-[:HAS_MENU_PERMISSION {permis
 MATCH (r:Role {id: 3}), (m:Menu {id: 13}) MERGE (r)-[:HAS_MENU_PERMISSION {permissionLevel: 'View'}]->(m);
 MATCH (r:Role {id: 3}), (m:Menu {id: 11}) MERGE (r)-[:HAS_MENU_PERMISSION {permissionLevel: 'View'}]->(m);
 MATCH (r:Role {id: 3}), (m:Menu {id: 12}) MERGE (r)-[:HAS_MENU_PERMISSION {permissionLevel: 'View'}]->(m);
+MATCH (r:Role {id: 3}), (m:Menu {id: 14}) MERGE (r)-[:HAS_MENU_PERMISSION {permissionLevel: 'View'}]->(m);
 
 // Auditor (role 4) → Dashboard, Reports, Audit Logs + children
 MATCH (r:Role {id: 4}), (m:Menu {id: 1}) MERGE (r)-[:HAS_MENU_PERMISSION {permissionLevel: 'View'}]->(m);
