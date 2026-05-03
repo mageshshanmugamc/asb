@@ -23,17 +23,10 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetUsers([FromQuery] QueryParams query)
+        public async Task<IActionResult> GetUsers()
         {
-            var pagedResult = await userService.GetUsers(query);
-            return Ok(new
-            {
-                items = UserResponse.DtoListToUsersList(pagedResult.Items),
-                totalCount = pagedResult.TotalCount,
-                page = pagedResult.Page,
-                pageSize = pagedResult.PageSize,
-                totalPages = pagedResult.TotalPages
-            });
+            var users = await userService.GetUsers();
+            return Ok(UserResponse.DtoListToUsersList(users));
         }
 
         [HttpPost]
