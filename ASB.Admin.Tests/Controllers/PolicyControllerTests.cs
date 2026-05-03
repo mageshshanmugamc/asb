@@ -2,6 +2,7 @@ namespace ASB.Admin.Tests.Controllers;
 
 using ASB.Admin.v1.Controllers;
 using ASB.Admin.v1.Requests;
+using ASB.Admin.v1.Response;
 using ASB.Services.v1.Dtos;
 using ASB.Services.v1.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -33,7 +34,7 @@ public class PolicyControllerTests
         var result = await _controller.GetAll();
 
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var returned = Assert.IsAssignableFrom<IEnumerable<PolicyDto>>(okResult.Value);
+        var returned = Assert.IsAssignableFrom<IEnumerable<PolicyResponse>>(okResult.Value);
         Assert.Equal(2, returned.Count());
     }
 
@@ -45,7 +46,7 @@ public class PolicyControllerTests
         var result = await _controller.GetAll();
 
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var returned = Assert.IsAssignableFrom<IEnumerable<PolicyDto>>(okResult.Value);
+        var returned = Assert.IsAssignableFrom<IEnumerable<PolicyResponse>>(okResult.Value);
         Assert.Empty(returned);
     }
 
@@ -59,7 +60,7 @@ public class PolicyControllerTests
         var result = await _controller.GetById(1);
 
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var returned = Assert.IsType<PolicyDto>(okResult.Value);
+        var returned = Assert.IsType<PolicyResponse>(okResult.Value);
         Assert.Equal("FullAccess", returned.Name);
     }
 
@@ -87,7 +88,7 @@ public class PolicyControllerTests
 
         var createdResult = Assert.IsType<CreatedAtActionResult>(result);
         Assert.Equal(201, createdResult.StatusCode);
-        var returned = Assert.IsType<PolicyDto>(createdResult.Value);
+        var returned = Assert.IsType<PolicyResponse>(createdResult.Value);
         Assert.Equal("WriteOnly", returned.Name);
     }
 
@@ -121,7 +122,7 @@ public class PolicyControllerTests
         var result = await _controller.Update(1, request);
 
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var returned = Assert.IsType<PolicyDto>(okResult.Value);
+        var returned = Assert.IsType<PolicyResponse>(okResult.Value);
         Assert.Equal("Updated", returned.Name);
     }
 

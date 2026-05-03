@@ -1,6 +1,7 @@
 namespace ASB.Admin.v1.Controllers
 {
     using ASB.Admin.v1.Requests;
+    using ASB.Admin.v1.Response;
     using ASB.Authorization;
     using ASB.Services.v1.Interfaces;
     using Microsoft.AspNetCore.Authorization;
@@ -23,7 +24,7 @@ namespace ASB.Admin.v1.Controllers
         public async Task<IActionResult> GetAll()
         {
             var roles = await _roleService.GetAllAsync();
-            return Ok(roles);
+            return Ok(RoleResponse.FromDtoList(roles));
         }
 
         [HttpGet("{id}")]
@@ -33,7 +34,7 @@ namespace ASB.Admin.v1.Controllers
             var role = await _roleService.GetByIdAsync(id);
             if (role is null)
                 return NotFound();
-            return Ok(role);
+            return Ok(RoleResponse.FromDto(role));
         }
 
         [HttpPost]
@@ -46,7 +47,7 @@ namespace ASB.Admin.v1.Controllers
             };
 
             var role = await _roleService.CreateAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = role.Id }, role);
+            return CreatedAtAction(nameof(GetById), new { id = role.Id }, RoleResponse.FromDto(role));
         }
 
         [HttpPost("{roleId}/policies/{policyId}")]

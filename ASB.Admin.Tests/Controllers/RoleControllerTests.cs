@@ -2,6 +2,7 @@ namespace ASB.Admin.Tests.Controllers;
 
 using ASB.Admin.v1.Controllers;
 using ASB.Admin.v1.Requests;
+using ASB.Admin.v1.Response;
 using ASB.Services.v1.Dtos;
 using ASB.Services.v1.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -35,7 +36,7 @@ public class RoleControllerTests
         var result = await _controller.GetAll();
 
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var returnedRoles = Assert.IsAssignableFrom<IEnumerable<RoleDto>>(okResult.Value);
+        var returnedRoles = Assert.IsAssignableFrom<IEnumerable<RoleResponse>>(okResult.Value);
         Assert.Equal(2, returnedRoles.Count());
     }
 
@@ -49,7 +50,7 @@ public class RoleControllerTests
         var result = await _controller.GetAll();
 
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var returnedRoles = Assert.IsAssignableFrom<IEnumerable<RoleDto>>(okResult.Value);
+        var returnedRoles = Assert.IsAssignableFrom<IEnumerable<RoleResponse>>(okResult.Value);
         Assert.Empty(returnedRoles);
     }
 
@@ -65,7 +66,7 @@ public class RoleControllerTests
         var result = await _controller.GetById(1);
 
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var returnedRole = Assert.IsType<RoleDto>(okResult.Value);
+        var returnedRole = Assert.IsType<RoleResponse>(okResult.Value);
         Assert.Equal("Admin", returnedRole.Name);
     }
 
@@ -95,7 +96,7 @@ public class RoleControllerTests
 
         var createdResult = Assert.IsType<CreatedAtActionResult>(result);
         Assert.Equal(201, createdResult.StatusCode);
-        var returnedRole = Assert.IsType<RoleDto>(createdResult.Value);
+        var returnedRole = Assert.IsType<RoleResponse>(createdResult.Value);
         Assert.Equal("Editor", returnedRole.Name);
     }
 

@@ -1,5 +1,6 @@
 namespace ASB.Admin.Tests.Neo4j;
 
+using ASB.Repositories.v1.Entities;
 using ASB.Repositories.v1.Neo4j;
 using global::Neo4j.Driver;
 using Moq;
@@ -111,11 +112,107 @@ public class Neo4jMenuRepositoryTests
         Assert.Equal("Admin", result[0].RoleMenuPermissions.First().Role.Name);
     }
 
+    [Fact]
+    public async Task GetAllAsync_ReturnsMenus()
+    {
+        var node = CreateMenuNode(1, "Dashboard", "/dashboard", "dashboard", 1);
+        var record = new Mock<IRecord>();
+        record.Setup(r => r["m"]).Returns(node);
+
+        SetupRunAsync(CursorWithRecords(record.Object));
+
+        var result = (await _repository.GetAllAsync()).ToList();
+
+        Assert.Single(result);
+        Assert.Equal("Dashboard", result[0].Name);
+        Assert.Equal("/dashboard", result[0].Route);
+    }
+
+    [Fact]
+    public async Task GetAllAsync_Empty_ReturnsEmptyList()
+    {
+        SetupRunAsync(CursorWithRecords());
+
+        var result = await _repository.GetAllAsync();
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_Found_ReturnsMenu()
+    {
+        var node = CreateMenuNode(2, "Settings", "/settings", "settings", 2);
+        var record = new Mock<IRecord>();
+        record.Setup(r => r["m"]).Returns(node);
+
+        SetupRunAsync(CursorWithRecords(record.Object));
+
+        var result = await _repository.GetByIdAsync(2);
+
+        Assert.NotNull(result);
+        Assert.Equal("Settings", result!.Name);
+        Assert.Equal("/settings", result.Route);
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_NotFound_ReturnsNull()
+    {
+        SetupRunAsync(CursorWithRecords());
+
+        var result = await _repository.GetByIdAsync(999);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task CreateAsync_ReturnsMenuWithId()
+    {
+        var node = CreateMenuNode(5, "Reports", "/reports", "report", 3);
+        var record = new Mock<IRecord>();
+        record.Setup(r => r["m"]).Returns(node);
+
+        SetupRunAsync(CursorWithRecords(record.Object));
+
+        var menu = new Menu { Name = "Reports", Route = "/reports", Icon = "report", DisplayOrder = 3 };
+        var result = await _repository.CreateAsync(menu);
+
+        Assert.Equal(5, result.Id);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_Found_ReturnsUpdatedMenu()
+    {
+        var node = CreateMenuNode(3, "Updated", "/updated", "edit", 5);
+        var record = new Mock<IRecord>();
+        record.Setup(r => r["m"]).Returns(node);
+
+        SetupRunAsync(CursorWithRecords(record.Object));
+
+        var menu = new Menu { Id = 3, Name = "Updated", Route = "/updated", Icon = "edit", DisplayOrder = 5 };
+        var result = await _repository.UpdateAsync(menu);
+
+        Assert.Equal("Updated", result.Name);
+        Assert.Equal("/updated", result.Route);
+        Assert.Equal(5, result.DisplayOrder);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_NotFound_ThrowsKeyNotFound()
+    {
+        SetupRunAsync(CursorWithRecords());
+
+        var menu = new Menu { Id = 999, Name = "X", Route = "/x", DisplayOrder = 1 };
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => _repository.UpdateAsync(menu));
+    }
+
     // ── Helpers ────────────────────────────────────────────────────────
 
     private void SetupRunAsync(IResultCursor cursor)
     {
         _sessionMock.Setup(s => s.RunAsync(It.IsAny<string>(), It.IsAny<object>()))
+            .ReturnsAsync(cursor);
+        _sessionMock.Setup(s => s.RunAsync(It.IsAny<string>()))
             .ReturnsAsync(cursor);
     }
 
@@ -153,5 +250,22 @@ public class Neo4jMenuRepositoryTests
         var record = new Mock<IRecord>();
         record.Setup(r => r[key]).Returns(value);
         return record.Object;
+    }
+
+    private static INode CreateMenuNode(int id, string name, string route, string? icon, int displayOrder)
+    {
+        var node = new Mock<INode>();
+        var props = new Dictionary<string, object>
+        {
+            ["id"] = id,
+            ["name"] = name,
+            ["route"] = route,
+            ["displayOrder"] = displayOrder
+        };
+        if (icon is not null)
+            props["icon"] = icon;
+        node.Setup(n => n[It.IsAny<string>()]).Returns<string>(key => props.GetValueOrDefault(key)!);
+        node.Setup(n => n.Properties).Returns(props);
+        return node.Object;
     }
 }

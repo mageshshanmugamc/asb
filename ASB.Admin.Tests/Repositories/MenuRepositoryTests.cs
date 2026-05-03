@@ -230,4 +230,91 @@ public class MenuRepositoryTests : IDisposable
         Assert.Single(result);
         Assert.Contains("ReadOnly", result);
     }
+
+    [Fact]
+    public async Task GetAllAsync_ReturnsAllMenusOrderedByDisplayOrder()
+    {
+        _context.Menus.AddRange(
+            new Menu { Id = 1, Name = "Third", Route = "/third", DisplayOrder = 3 },
+            new Menu { Id = 2, Name = "First", Route = "/first", DisplayOrder = 1 },
+            new Menu { Id = 3, Name = "Second", Route = "/second", DisplayOrder = 2 }
+        );
+        await _context.SaveChangesAsync();
+
+        var result = (await _repository.GetAllAsync()).ToList();
+
+        Assert.Equal(3, result.Count);
+        Assert.Equal("First", result[0].Name);
+        Assert.Equal("Second", result[1].Name);
+        Assert.Equal("Third", result[2].Name);
+    }
+
+    [Fact]
+    public async Task GetAllAsync_Empty_ReturnsEmptyList()
+    {
+        var result = await _repository.GetAllAsync();
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_Found_ReturnsMenu()
+    {
+        _context.Menus.Add(new Menu { Id = 1, Name = "Dashboard", Route = "/dashboard", DisplayOrder = 1 });
+        await _context.SaveChangesAsync();
+
+        var result = await _repository.GetByIdAsync(1);
+
+        Assert.NotNull(result);
+        Assert.Equal("Dashboard", result!.Name);
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_NotFound_ReturnsNull()
+    {
+        var result = await _repository.GetByIdAsync(999);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task CreateAsync_AddsMenuAndReturnsIt()
+    {
+        var menu = new Menu { Name = "Reports", Route = "/reports", Icon = "report", DisplayOrder = 3 };
+
+        var result = await _repository.CreateAsync(menu);
+
+        Assert.True(result.Id > 0);
+        Assert.Equal("Reports", result.Name);
+        Assert.Equal("/reports", result.Route);
+        Assert.Equal("report", result.Icon);
+        Assert.Equal(3, result.DisplayOrder);
+
+        var inDb = await _context.Menus.FindAsync(result.Id);
+        Assert.NotNull(inDb);
+        Assert.Equal("Reports", inDb!.Name);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_Found_UpdatesAndReturnsMenu()
+    {
+        _context.Menus.Add(new Menu { Id = 1, Name = "Old", Route = "/old", Icon = "old_icon", DisplayOrder = 1 });
+        await _context.SaveChangesAsync();
+
+        var updated = new Menu { Id = 1, Name = "New", Route = "/new", Icon = "new_icon", DisplayOrder = 5, ParentMenuId = null };
+        var result = await _repository.UpdateAsync(updated);
+
+        Assert.Equal("New", result.Name);
+        Assert.Equal("/new", result.Route);
+        Assert.Equal("new_icon", result.Icon);
+        Assert.Equal(5, result.DisplayOrder);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_NotFound_ThrowsKeyNotFoundException()
+    {
+        var menu = new Menu { Id = 999, Name = "X", Route = "/x", DisplayOrder = 1 };
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => _repository.UpdateAsync(menu));
+    }
 }

@@ -1,6 +1,7 @@
 namespace ASB.Admin.v1.Controllers
 {
     using ASB.Admin.v1.Requests;
+    using ASB.Admin.v1.Response;
     using ASB.Authorization;
     using ASB.Services.v1.Interfaces;
     using Microsoft.AspNetCore.Authorization;
@@ -23,7 +24,7 @@ namespace ASB.Admin.v1.Controllers
         public async Task<IActionResult> GetAll()
         {
             var groups = await _userGroupService.GetAllAsync();
-            return Ok(groups);
+            return Ok(UserGroupResponse.FromDtoList(groups));
         }
 
         [HttpGet("{id}")]
@@ -33,7 +34,7 @@ namespace ASB.Admin.v1.Controllers
             var group = await _userGroupService.GetByIdAsync(id);
             if (group is null)
                 return NotFound();
-            return Ok(group);
+            return Ok(UserGroupResponse.FromDto(group));
         }
 
         [HttpPost]
@@ -47,7 +48,7 @@ namespace ASB.Admin.v1.Controllers
             };
 
             var group = await _userGroupService.CreateAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = group.Id }, group);
+            return CreatedAtAction(nameof(GetById), new { id = group.Id }, UserGroupResponse.FromDto(group));
         }
 
         [HttpPut("{id}")]
@@ -61,7 +62,7 @@ namespace ASB.Admin.v1.Controllers
             };
 
             var group = await _userGroupService.UpdateAsync(id, dto);
-            return Ok(group);
+            return Ok(UserGroupResponse.FromDto(group));
         }
 
         [HttpPost("{groupId}/users/{userId}")]

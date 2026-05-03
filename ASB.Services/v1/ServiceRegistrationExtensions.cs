@@ -13,6 +13,7 @@ public static class ServiceRegistrationExtensions
         services.AddScoped<IAuthTokenService, AuthTokenService>();
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IPolicyService, PolicyService>();
+        services.AddScoped<IMenuService, MenuService>();
 
         return services;
     }

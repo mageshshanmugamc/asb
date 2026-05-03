@@ -94,4 +94,59 @@ public class Neo4jMenuRepository : IMenuRepository
         DisplayOrder = node["displayOrder"].As<int>(),
         ParentMenuId = node.Properties.ContainsKey("parentMenuId") ? node["parentMenuId"]?.As<int?>() : null
     };
+
+    public async Task<IEnumerable<Menu>> GetAllAsync()
+    {
+        await using var session = _factory.OpenSession();
+        var result = await session.RunAsync("MATCH (m:Menu) RETURN m ORDER BY m.displayOrder");
+
+        var menus = new List<Menu>();
+        await foreach (var record in result)
+        {
+            menus.Add(MapMenu(record["m"].As<INode>()));
+        }
+        return menus;
+    }
+
+    public async Task<Menu?> GetByIdAsync(int id)
+    {
+        await using var session = _factory.OpenSession();
+        var result = await session.RunAsync(
+            "MATCH (m:Menu {id: $id}) RETURN m",
+            new { id });
+
+        var record = await result.SingleOrDefaultAsync();
+        return record is null ? null : MapMenu(record["m"].As<INode>());
+    }
+
+    public async Task<Menu> CreateAsync(Menu menu)
+    {
+        await using var session = _factory.OpenSession();
+        var result = await session.RunAsync(
+            @"CREATE (m:Menu {name: $name, route: $route, icon: $icon, displayOrder: $displayOrder, parentMenuId: $parentMenuId})
+              SET m.id = id(m)
+              RETURN m",
+            new { name = menu.Name, route = menu.Route, icon = menu.Icon, displayOrder = menu.DisplayOrder, parentMenuId = menu.ParentMenuId });
+
+        var record = await result.SingleAsync();
+        var node = record["m"].As<INode>();
+        menu.Id = node["id"].As<int>();
+        return menu;
+    }
+
+    public async Task<Menu> UpdateAsync(Menu menu)
+    {
+        await using var session = _factory.OpenSession();
+        var result = await session.RunAsync(
+            @"MATCH (m:Menu {id: $id})
+              SET m.name = $name, m.route = $route, m.icon = $icon, m.displayOrder = $displayOrder, m.parentMenuId = $parentMenuId
+              RETURN m",
+            new { id = menu.Id, name = menu.Name, route = menu.Route, icon = menu.Icon, displayOrder = menu.DisplayOrder, parentMenuId = menu.ParentMenuId });
+
+        var record = await result.SingleOrDefaultAsync();
+        if (record is null)
+            throw new KeyNotFoundException($"Menu with Id {menu.Id} not found.");
+
+        return MapMenu(record["m"].As<INode>());
+    }
 }

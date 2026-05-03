@@ -49,4 +49,39 @@ public class MenuRepository : IMenuRepository
             .Distinct()
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<Menu>> GetAllAsync()
+    {
+        return await _context.Menus
+            .OrderBy(m => m.DisplayOrder)
+            .ToListAsync();
+    }
+
+    public async Task<Menu?> GetByIdAsync(int id)
+    {
+        return await _context.Menus.FirstOrDefaultAsync(m => m.Id == id);
+    }
+
+    public async Task<Menu> CreateAsync(Menu menu)
+    {
+        _context.Menus.Add(menu);
+        await _context.SaveChangesAsync();
+        return menu;
+    }
+
+    public async Task<Menu> UpdateAsync(Menu menu)
+    {
+        var existing = await _context.Menus
+            .FirstOrDefaultAsync(m => m.Id == menu.Id)
+            ?? throw new KeyNotFoundException($"Menu with Id {menu.Id} not found.");
+
+        existing.Name = menu.Name;
+        existing.Route = menu.Route;
+        existing.Icon = menu.Icon;
+        existing.DisplayOrder = menu.DisplayOrder;
+        existing.ParentMenuId = menu.ParentMenuId;
+
+        await _context.SaveChangesAsync();
+        return existing;
+    }
 }

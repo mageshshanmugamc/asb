@@ -40,7 +40,7 @@ namespace ASB.Admin.v1.Controllers
             };
 
             var user = await userService.CreateUserAsync(dto);
-            return CreatedAtAction(nameof(GetUsers), new { id = user.Id }, new { user.Id, user.Username, user.Email, user.UserGroupIds });
+            return CreatedAtAction(nameof(GetUsers), new { id = user.Id }, UserResponse.DtoToUsers(user));
         }
 
         [HttpPost("{userId}/groups/{groupId}")]

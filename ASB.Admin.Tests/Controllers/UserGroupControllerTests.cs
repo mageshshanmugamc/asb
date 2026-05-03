@@ -2,6 +2,7 @@ namespace ASB.Admin.Tests.Controllers;
 
 using ASB.Admin.v1.Controllers;
 using ASB.Admin.v1.Requests;
+using ASB.Admin.v1.Response;
 using ASB.Services.v1.Dtos;
 using ASB.Services.v1.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -35,7 +36,7 @@ public class UserGroupControllerTests
         var result = await _controller.GetAll();
 
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var returnedGroups = Assert.IsAssignableFrom<IEnumerable<UserGroupDto>>(okResult.Value);
+        var returnedGroups = Assert.IsAssignableFrom<IEnumerable<UserGroupResponse>>(okResult.Value);
         Assert.Equal(2, returnedGroups.Count());
     }
 
@@ -49,7 +50,7 @@ public class UserGroupControllerTests
         var result = await _controller.GetAll();
 
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var returnedGroups = Assert.IsAssignableFrom<IEnumerable<UserGroupDto>>(okResult.Value);
+        var returnedGroups = Assert.IsAssignableFrom<IEnumerable<UserGroupResponse>>(okResult.Value);
         Assert.Empty(returnedGroups);
     }
 
@@ -65,7 +66,7 @@ public class UserGroupControllerTests
         var result = await _controller.GetById(1);
 
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var returnedGroup = Assert.IsType<UserGroupDto>(okResult.Value);
+        var returnedGroup = Assert.IsType<UserGroupResponse>(okResult.Value);
         Assert.Equal("Admin", returnedGroup.GroupName);
     }
 
@@ -95,7 +96,7 @@ public class UserGroupControllerTests
 
         var createdResult = Assert.IsType<CreatedAtActionResult>(result);
         Assert.Equal(201, createdResult.StatusCode);
-        var returnedGroup = Assert.IsType<UserGroupDto>(createdResult.Value);
+        var returnedGroup = Assert.IsType<UserGroupResponse>(createdResult.Value);
         Assert.Equal("Editors", returnedGroup.GroupName);
     }
 
@@ -159,7 +160,7 @@ public class UserGroupControllerTests
         var result = await _controller.GetById(1);
 
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var returnedGroup = Assert.IsType<UserGroupDto>(okResult.Value);
+        var returnedGroup = Assert.IsType<UserGroupResponse>(okResult.Value);
         Assert.Single(returnedGroup.Users);
         Assert.Single(returnedGroup.Roles);
     }
@@ -198,7 +199,7 @@ public class UserGroupControllerTests
         var result = await _controller.Update(1, request);
 
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var returnedGroup = Assert.IsType<UserGroupDto>(okResult.Value);
+        var returnedGroup = Assert.IsType<UserGroupResponse>(okResult.Value);
         Assert.Equal("UpdatedGroup", returnedGroup.GroupName);
         Assert.Equal(2, returnedGroup.Roles.Count);
     }

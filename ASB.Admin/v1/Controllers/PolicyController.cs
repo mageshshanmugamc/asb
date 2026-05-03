@@ -1,6 +1,7 @@
 namespace ASB.Admin.v1.Controllers
 {
     using ASB.Admin.v1.Requests;
+    using ASB.Admin.v1.Response;
     using ASB.Authorization;
     using ASB.Services.v1.Dtos;
     using ASB.Services.v1.Interfaces;
@@ -24,7 +25,7 @@ namespace ASB.Admin.v1.Controllers
         public async Task<IActionResult> GetAll()
         {
             var policies = await _policyService.GetAllAsync();
-            return Ok(policies);
+            return Ok(PolicyResponse.FromDtoList(policies));
         }
 
         [HttpGet("{id}")]
@@ -34,7 +35,7 @@ namespace ASB.Admin.v1.Controllers
             var policy = await _policyService.GetByIdAsync(id);
             if (policy is null)
                 return NotFound();
-            return Ok(policy);
+            return Ok(PolicyResponse.FromDto(policy));
         }
 
         [HttpPost]
@@ -50,7 +51,7 @@ namespace ASB.Admin.v1.Controllers
             };
 
             var policy = await _policyService.CreateAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = policy.Id }, policy);
+            return CreatedAtAction(nameof(GetById), new { id = policy.Id }, PolicyResponse.FromDto(policy));
         }
 
         [HttpPut("{id}")]
@@ -66,7 +67,7 @@ namespace ASB.Admin.v1.Controllers
             };
 
             var policy = await _policyService.UpdateAsync(id, dto);
-            return Ok(policy);
+            return Ok(PolicyResponse.FromDto(policy));
         }
     }
 }
