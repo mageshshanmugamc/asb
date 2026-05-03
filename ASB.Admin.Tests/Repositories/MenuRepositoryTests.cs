@@ -185,4 +185,49 @@ public class MenuRepositoryTests : IDisposable
 
         Assert.Empty(result);
     }
+
+    [Fact]
+    public async Task GetPolicyNamesByRoleIdsAsync_ReturnsPolicyNames()
+    {
+        _context.Roles.Add(new Role { Id = 1, Name = "Admin" });
+        _context.Policies.Add(new Policy { Id = 1, Name = "FullAccess", Description = "Full access", Resource = "*", Action = "*" });
+        _context.Policies.Add(new Policy { Id = 2, Name = "ReadOnly", Description = "Read only", Resource = "*", Action = "Read" });
+        _context.RolePolicies.Add(new RolePolicy { RoleId = 1, PolicyId = 1 });
+        _context.RolePolicies.Add(new RolePolicy { RoleId = 1, PolicyId = 2 });
+        await _context.SaveChangesAsync();
+
+        var result = await _repository.GetPolicyNamesByRoleIdsAsync(new[] { 1 });
+
+        Assert.Equal(2, result.Count);
+        Assert.Contains("FullAccess", result);
+        Assert.Contains("ReadOnly", result);
+    }
+
+    [Fact]
+    public async Task GetPolicyNamesByRoleIdsAsync_NoRolePolicies_ReturnsEmpty()
+    {
+        var result = await _repository.GetPolicyNamesByRoleIdsAsync(new[] { 999 });
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetPolicyNamesByRoleIdsAsync_MultipleRoles_ReturnsDistinct()
+    {
+        _context.Roles.AddRange(
+            new Role { Id = 1, Name = "R1" },
+            new Role { Id = 2, Name = "R2" }
+        );
+        _context.Policies.Add(new Policy { Id = 1, Name = "ReadOnly", Description = "Read", Resource = "*", Action = "Read" });
+        _context.RolePolicies.AddRange(
+            new RolePolicy { RoleId = 1, PolicyId = 1 },
+            new RolePolicy { RoleId = 2, PolicyId = 1 }
+        );
+        await _context.SaveChangesAsync();
+
+        var result = await _repository.GetPolicyNamesByRoleIdsAsync(new[] { 1, 2 });
+
+        Assert.Single(result);
+        Assert.Contains("ReadOnly", result);
+    }
 }

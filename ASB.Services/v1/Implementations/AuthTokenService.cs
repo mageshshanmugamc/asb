@@ -51,10 +51,13 @@ public class AuthTokenService : IAuthTokenService
             roleNames = roleIds.Select(id => $"role_{id}").ToList();
         }
 
+        // Get policy names for the user's roles
+        var policyNames = await _menuRepository.GetPolicyNamesByRoleIdsAsync(roleIds);
+
         // Build JWT
         var expiresAt = DateTime.UtcNow.AddHours(1);
         var menuDtos = BuildMenuHierarchy(menus);
-        var token = GenerateJwt(user, roleNames, menuDtos, expiresAt);
+        var token = GenerateJwt(user, roleNames, policyNames, menuDtos, expiresAt);
 
         return new AppTokenDto
         {
@@ -65,7 +68,7 @@ public class AuthTokenService : IAuthTokenService
         };
     }
 
-    private string GenerateJwt(User user, List<string> roles, List<MenuDto> menus, DateTime expiresAt)
+    private string GenerateJwt(User user, List<string> roles, List<string> permissions, List<MenuDto> menus, DateTime expiresAt)
     {
         var key = _configuration["Jwt:Secret"]
             ?? throw new InvalidOperationException("Jwt:Secret not configured.");
@@ -87,6 +90,11 @@ public class AuthTokenService : IAuthTokenService
         foreach (var role in roles)
         {
             claims.Add(new Claim("roles", role));
+        }
+
+        foreach (var permission in permissions)
+        {
+            claims.Add(new Claim("permissions", permission));
         }
 
         var token = new JwtSecurityToken(

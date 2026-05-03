@@ -25,6 +25,10 @@ public class AuthTokenServiceTests
         _configMock.Setup(c => c["Jwt:Issuer"]).Returns("test-issuer");
         _configMock.Setup(c => c["Jwt:Audience"]).Returns("test-audience");
 
+        // Default: return empty policy list (tests override as needed)
+        _menuRepoMock.Setup(r => r.GetPolicyNamesByRoleIdsAsync(It.IsAny<IEnumerable<int>>()))
+            .ReturnsAsync(new List<string>());
+
         _service = new AuthTokenService(_menuRepoMock.Object, _userRepoMock.Object, _configMock.Object);
     }
 
@@ -149,6 +153,7 @@ public class AuthTokenServiceTests
         _userRepoMock.Setup(r => r.GetUserByEmailAsync("u@t.com")).ReturnsAsync(user);
         _menuRepoMock.Setup(r => r.GetUserRoleIdsAsync(1)).ReturnsAsync(new List<int>());
         _menuRepoMock.Setup(r => r.GetMenusByRoleIdsAsync(It.IsAny<List<int>>())).ReturnsAsync(new List<Menu>());
+        _menuRepoMock.Setup(r => r.GetPolicyNamesByRoleIdsAsync(It.IsAny<IEnumerable<int>>())).ReturnsAsync(new List<string>());
 
         var dto = new GenerateTokenDto { Username = "u", Email = "u@t.com" };
 

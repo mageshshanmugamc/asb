@@ -8,7 +8,7 @@ namespace ASB.Admin.v1.Controllers
 
     [ApiController]
     [Route("api/v1/[controller]")]
-    // [Authorize]
+    [AllowAnonymous]
     public class AuthController : ControllerBase
     {
         private readonly IAuthTokenService _authTokenService;

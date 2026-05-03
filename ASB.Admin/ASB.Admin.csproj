@@ -23,6 +23,7 @@
     <ProjectReference Include="..\ASB.Services\ASB.Services.csproj" />
     <ProjectReference Include="..\ASB.Repositories\ASB.Repositories.csproj" />
     <ProjectReference Include="..\ASB.ErrorHandler\ASB.ErrorHandler.csproj" />
+    <ProjectReference Include="..\ASB.Authorization\ASB.Authorization.csproj" />
   </ItemGroup>
 
 </Project>

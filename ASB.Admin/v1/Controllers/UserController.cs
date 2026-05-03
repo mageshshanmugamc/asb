@@ -3,6 +3,7 @@ namespace ASB.Admin.v1.Controllers
     using ASB.Admin.v1.Infrastructure;
     using ASB.Admin.v1.Requests;
     using ASB.Admin.v1.Response;
+    using ASB.Authorization;
     using ASB.Services.v1.Dtos;
     using ASB.Services.v1.Interfaces;
     using Microsoft.AspNetCore.Authorization;
@@ -23,6 +24,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = Policies.ReadOnly)]
         public async Task<IActionResult> GetUsers()
         {
             var users = await userService.GetUsers();
@@ -30,6 +32,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = Policies.ManageUsers)]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
             var dto = new CreateUserDto
@@ -44,6 +47,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpPost("{userId}/groups/{groupId}")]
+        [Authorize(Policy = Policies.ManageUsers)]
         public async Task<IActionResult> AddUserToGroup(int userId, int groupId)
         {
             await userService.AddUserToGroupAsync(userId, groupId);
@@ -51,6 +55,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpGet("keycloak/lookup")]
+        [Authorize(Policy = Policies.ManageUsers)]
         public async Task<IActionResult> LookupKeycloakUser([FromQuery] string email)
         {
             if (string.IsNullOrWhiteSpace(email))

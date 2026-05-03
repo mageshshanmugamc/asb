@@ -1,6 +1,7 @@
 namespace ASB.Admin.v1.Controllers
 {
     using ASB.Admin.v1.Requests;
+    using ASB.Authorization;
     using ASB.Services.v1.Interfaces;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = Policies.ReadOnly)]
         public async Task<IActionResult> GetAll()
         {
             var groups = await _userGroupService.GetAllAsync();
@@ -25,6 +27,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = Policies.ReadOnly)]
         public async Task<IActionResult> GetById(int id)
         {
             var group = await _userGroupService.GetByIdAsync(id);
@@ -34,6 +37,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = Policies.ManageUsers)]
         public async Task<IActionResult> Create([FromBody] CreateUserGroupRequest request)
         {
             var dto = new ASB.Services.v1.Dtos.CreateUserGroupDto
@@ -46,6 +50,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpPost("{groupId}/users/{userId}")]
+        [Authorize(Policy = Policies.ManageUsers)]
         public async Task<IActionResult> AddUserToGroup(int groupId, int userId)
         {
             await _userGroupService.AddUserToGroupAsync(userId, groupId);
@@ -53,6 +58,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpPost("{groupId}/roles/{roleId}")]
+        [Authorize(Policy = Policies.FullAccess)]
         public async Task<IActionResult> AssignRoleToGroup(int groupId, int roleId)
         {
             await _userGroupService.AssignRoleToGroupAsync(groupId, roleId);

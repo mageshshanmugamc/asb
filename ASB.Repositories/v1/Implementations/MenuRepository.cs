@@ -40,4 +40,13 @@ public class MenuRepository : IMenuRepository
             .Distinct()
             .ToListAsync();
     }
+
+    public async Task<List<string>> GetPolicyNamesByRoleIdsAsync(IEnumerable<int> roleIds)
+    {
+        return await _context.RolePolicies
+            .Where(rp => roleIds.Contains(rp.RoleId))
+            .Select(rp => rp.Policy.Name)
+            .Distinct()
+            .ToListAsync();
+    }
 }

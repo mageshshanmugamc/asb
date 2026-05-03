@@ -9,6 +9,7 @@ using ASB.Repositories.v1.Implementations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using ASB.Admin.v1.Infrastructure;
+using ASB.Authorization;
 
 
 
@@ -58,6 +59,9 @@ builder.Services.AddScoped<IAuthTokenService, AuthTokenService>();
 builder.Services.AddScoped<IMenuRepository, MenuRepository>();
 builder.Services.AddScoped<IKeycloakUserProvisioningService, KeycloakUserProvisioningService>();
 builder.Services.AddHttpClient<IKeycloakAdminService, KeycloakAdminService>();
+
+// Register policy-based authorization
+builder.Services.AddPolicyAuthorization();
 
 //Swagger configuration
 // Configure Swagger with authentication
