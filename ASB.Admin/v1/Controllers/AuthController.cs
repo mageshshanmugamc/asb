@@ -9,6 +9,10 @@ namespace ASB.Admin.v1.Controllers
     [ApiController]
     [Route("api/v1/[controller]")]
     [AllowAnonymous]
+    /// <summary>
+    /// Controller responsible for token exchange. It accepts a Keycloak token (already validated by middleware)
+    /// and returns an app-specific token containing roles and allowed menus.
+    /// </summary>
     public class AuthController : ControllerBase
     {
         private readonly IAuthTokenService _authTokenService;
@@ -60,9 +64,7 @@ namespace ASB.Admin.v1.Controllers
             {
                 access_token = result.Token,
                 token_type = "Bearer",
-                expires_at = result.ExpiresAt,
-                roles = result.Roles,
-                menus = result.Menus
+                expires_at = result.ExpiresAt
             });
         }
     }
