@@ -5,12 +5,11 @@ namespace ASB.Admin.v1.Controllers
     using ASB.Authorization;
     using ASB.Services.v1.Dtos;
     using ASB.Services.v1.Interfaces;
-    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
 
     [ApiController]
     [Route("api/v1/[controller]")]
-    [Authorize]
+    [AsbAuthorize]
     public class PolicyController : ControllerBase
     {
         private readonly IPolicyService _policyService;
@@ -21,7 +20,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = Policies.ReadOnly)]
+        [AsbAuthorize(Policies.ReadOnly)]
         public async Task<IActionResult> GetAll()
         {
             var policies = await _policyService.GetAllAsync();
@@ -29,7 +28,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Policy = Policies.ReadOnly)]
+        [AsbAuthorize(Policies.ReadOnly)]
         public async Task<IActionResult> GetById(int id)
         {
             var policy = await _policyService.GetByIdAsync(id);
@@ -39,7 +38,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = Policies.FullAccess)]
+        [AsbAuthorize(Policies.FullAccess)]
         public async Task<IActionResult> Create([FromBody] CreatePolicyRequest request)
         {
             var dto = new CreatePolicyDto
@@ -55,7 +54,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Policy = Policies.FullAccess)]
+        [AsbAuthorize(Policies.FullAccess)]
         public async Task<IActionResult> Update(int id, [FromBody] UpdatePolicyRequest request)
         {
             var dto = new UpdatePolicyDto

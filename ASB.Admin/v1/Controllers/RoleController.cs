@@ -4,12 +4,11 @@ namespace ASB.Admin.v1.Controllers
     using ASB.Admin.v1.Response;
     using ASB.Authorization;
     using ASB.Services.v1.Interfaces;
-    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
 
     [ApiController]
     [Route("api/v1/[controller]")]
-    [Authorize]
+    [AsbAuthorize]
     public class RoleController : ControllerBase
     {
         private readonly IRoleService _roleService;
@@ -20,7 +19,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = Policies.ReadOnly)]
+        [AsbAuthorize(Policies.ReadOnly)]
         public async Task<IActionResult> GetAll()
         {
             var roles = await _roleService.GetAllAsync();
@@ -28,7 +27,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Policy = Policies.ReadOnly)]
+        [AsbAuthorize(Policies.ReadOnly)]
         public async Task<IActionResult> GetById(int id)
         {
             var role = await _roleService.GetByIdAsync(id);
@@ -38,7 +37,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = Policies.FullAccess)]
+        [AsbAuthorize(Policies.FullAccess)]
         public async Task<IActionResult> Create([FromBody] CreateRoleRequest request)
         {
             var dto = new ASB.Services.v1.Dtos.CreateRoleDto
@@ -51,7 +50,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpPost("{roleId}/policies/{policyId}")]
-        [Authorize(Policy = Policies.FullAccess)]
+        [AsbAuthorize(Policies.FullAccess)]
         public async Task<IActionResult> AssignPolicyToRole(int roleId, int policyId)
         {
             await _roleService.AssignPolicyToRoleAsync(roleId, policyId);

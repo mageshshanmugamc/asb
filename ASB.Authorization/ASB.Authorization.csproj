@@ -10,4 +10,8 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ASB.ErrorHandler\ASB.ErrorHandler.csproj" />
+  </ItemGroup>
+
 </Project>

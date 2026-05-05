@@ -5,12 +5,11 @@ namespace ASB.Admin.v1.Controllers
     using ASB.Authorization;
     using ASB.Services.v1.Dtos;
     using ASB.Services.v1.Interfaces;
-    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
 
     [ApiController]
     [Route("api/v1/[controller]")]
-    [Authorize]
+    [AsbAuthorize]
     public class MenuController : ControllerBase
     {
         private readonly IMenuService _menuService;
@@ -21,7 +20,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = Policies.ReadOnly)]
+        [AsbAuthorize(Policies.ReadOnly)]
         public async Task<IActionResult> GetAll()
         {
             var menus = await _menuService.GetAllAsync();
@@ -29,7 +28,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Policy = Policies.ReadOnly)]
+        [AsbAuthorize(Policies.ReadOnly)]
         public async Task<IActionResult> GetById(int id)
         {
             var menu = await _menuService.GetByIdAsync(id);
@@ -39,7 +38,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = Policies.FullAccess)]
+        [AsbAuthorize(Policies.FullAccess)]
         public async Task<IActionResult> Create([FromBody] CreateMenuRequest request)
         {
             var dto = new CreateMenuDto
@@ -56,7 +55,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Policy = Policies.FullAccess)]
+        [AsbAuthorize(Policies.FullAccess)]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateMenuRequest request)
         {
             var dto = new UpdateMenuDto

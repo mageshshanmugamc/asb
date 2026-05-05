@@ -5,12 +5,11 @@ namespace ASB.Admin.v1.Controllers
     using ASB.Authorization;
     using ASB.Services.v1.Dtos;
     using ASB.Services.v1.Interfaces;
-    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
 
     [ApiController]
     [Route("api/v1/[controller]")]
-    [Authorize]
+    [AsbAuthorize]
     public class UserController : ControllerBase
     {
         private readonly IUserService userService;
@@ -21,7 +20,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = Policies.ReadOnly)]
+        [AsbAuthorize(Policies.ReadOnly)]
         public async Task<IActionResult> GetUsers()
         {
             var users = await userService.GetUsers();
@@ -29,7 +28,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = Policies.ManageUsers)]
+        [AsbAuthorize(Policies.ManageUsers)]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
             var dto = new CreateUserDto
@@ -44,7 +43,7 @@ namespace ASB.Admin.v1.Controllers
         }
 
         [HttpPost("{userId}/groups/{groupId}")]
-        [Authorize(Policy = Policies.ManageUsers)]
+        [AsbAuthorize(Policies.ManageUsers)]
         public async Task<IActionResult> AddUserToGroup(int userId, int groupId)
         {
             await userService.AddUserToGroupAsync(userId, groupId);
