@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Semantic Kernel - Orchestrator + Agent loop -->
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.75.0" />
+
+    <!-- Ollama connector for Semantic Kernel (chat + embeddings) -->
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Ollama" Version="1.75.0-alpha" />
+
+    <!-- Qdrant connector for Semantic Kernel (vector store) -->
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="1.74.0-preview" />
+
+    <!-- Semantic Kernel Agents for tool-calling agent loop -->
+    <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.75.0" />
+
+    <!-- For HTTP calls to Qdrant/Ollama -->
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0" />
+
+    <!-- Configuration abstractions -->
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ASB.Services\ASB.Services.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -113,4 +113,35 @@ public class Neo4jUserRepository : IUserRepository
         if (value is LocalDateTime ldt) return ldt.ToDateTime();
         return DateTime.UtcNow;
     }
+
+    public async Task<IEnumerable<User>> GetUserById(int userId)
+    {
+        await using var session = _factory.OpenSession();
+        var result = await session.RunAsync(
+            @"MATCH (u:User {id: $userId})
+              OPTIONAL MATCH (u)-[m:MEMBER_OF]->(g:UserGroup)
+              RETURN u, collect({userGroupId: g.id, assignedAt: m.assignedAt, assignedBy: m.assignedBy}) AS memberships",
+            new { userId });
+
+        var users = new List<User>();
+        await foreach (var record in result)
+        {
+            var user = MapUser(record["u"].As<INode>());
+            var memberships = record["memberships"].As<List<IDictionary<string, object>>>();
+            foreach (var membership in memberships)
+            {
+                if (membership["userGroupId"] is null) continue;
+                user.UserGroupMappings.Add(new UserGroupMapping
+                {
+                    UserId = user.Id,
+                    UserGroupId = membership["userGroupId"].As<int>(),
+                    AssignedAt = ConvertToDateTime(membership["assignedAt"]),
+                    AssignedBy = membership["assignedBy"]?.As<string>()
+                });
+            }
+            users.Add(user);
+        }
+        return users;
+    }
+
 }

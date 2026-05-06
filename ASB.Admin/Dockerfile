@@ -11,6 +11,7 @@ COPY ASB.Services/ASB.Services.csproj ASB.Services/
 COPY ASB.Repositories/ASB.Repositories.csproj ASB.Repositories/
 COPY ASB.ErrorHandler/ASB.ErrorHandler.csproj ASB.ErrorHandler/
 COPY ASB.Authorization/ASB.Authorization.csproj ASB.Authorization/
+COPY ASB.Agent/ASB.Agent.csproj ASB.Agent/
 RUN dotnet restore ASB.Admin/ASB.Admin.csproj
 
 # Copy everything and build

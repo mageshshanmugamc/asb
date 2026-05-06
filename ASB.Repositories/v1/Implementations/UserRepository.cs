@@ -45,5 +45,11 @@ namespace ASB.Repositories.v1.Implementations
             });
             await _context.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<User>> GetUserById(int userId) => await _context.UserGroupMappings
+            .Where(u => u.User.Id == userId)
+            .Select(ugm => ugm.User)
+            .Include(u => u.UserGroupMappings)
+            .ToListAsync();
     }
 }

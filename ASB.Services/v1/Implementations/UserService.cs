@@ -9,7 +9,7 @@ namespace ASB.Services.v1.Implementations
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        public UserService(IUserRepository userRepository)
+        public UserService(IUserRepository userRepository)  
         {
             _userRepository = userRepository;
         }
@@ -66,6 +66,21 @@ namespace ASB.Services.v1.Implementations
                 ?? throw new KeyNotFoundException($"User with Id {userId} not found.");
 
             await _userRepository.AddUserToGroupAsync(userId, userGroupId);
+        }
+
+        public async Task<UserDto> GetUserByIdAsync(int id)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user is null)
+                return null;
+
+            return new UserDto
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Email = user.Email,
+                UserGroupIds = user.UserGroupMappings.Select(ugm => ugm.UserGroupId).ToList()
+            };
         }
     }
 }

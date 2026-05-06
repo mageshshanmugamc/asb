@@ -2,6 +2,7 @@ using Microsoft.OpenApi;
 using Serilog;
 using ASB.Services.v1;
 using ASB.Repositories.v1;
+using ASB.Agent.v1;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using ASB.Authorization;
@@ -40,6 +41,9 @@ builder.Services.AddCors(options =>
 
 
 builder.Services.AddApplicationServices();
+
+// Register AI Agent services (Semantic Kernel + Ollama + Qdrant)
+builder.Services.AddAgentServices(builder.Configuration);
 
 // Register policy-based authorization
 builder.Services.AddPolicyAuthorization();

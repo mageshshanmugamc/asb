@@ -8,5 +8,7 @@ namespace ASB.Services.v1.Interfaces
         Task<IEnumerable<UserDto>> GetUsers();
         Task<UserDto> CreateUserAsync(CreateUserDto dto);
         Task AddUserToGroupAsync(int userId, int userGroupId);
+
+        Task<UserDto> GetUserByIdAsync(int id);
     }
 }

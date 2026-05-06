@@ -49,5 +49,14 @@ namespace ASB.Admin.v1.Controllers
             await userService.AddUserToGroupAsync(userId, groupId);
             return NoContent();
         }
+        [HttpGet("{id}")]
+        [AsbAuthorize(Policies.ReadOnly)]
+        public async Task<IActionResult> GetUserById(int id)
+        {
+            var user = await userService.GetUserByIdAsync(id);
+            if (user is null)
+                return NotFound();
+            return Ok(UserResponse.DtoToUsers(user));
+        }
     }
 }
