@@ -5,6 +5,7 @@ namespace ASB.Admin.v1.Controllers
     using ASB.Services.v1.Interfaces;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
+    using ASB.ErrorHandler.v1.Exceptions;
 
     [ApiController]
     [Route("api/v1/[controller]")]
@@ -34,14 +35,14 @@ namespace ASB.Admin.v1.Controllers
             [FromForm] string subject_token)
         {
             if (grant_type != "urn:ietf:params:oauth:grant-type:token-exchange")
-                return BadRequest(new { error = "unsupported_grant_type" });
+                throw new BadRequestException(message: "unsupported_grant_type");
 
             if (string.IsNullOrWhiteSpace(subject_token))
-                return BadRequest(new { error = "invalid_request", error_description = "subject_token is required." });
+                throw new BadRequestException(message: "subject_token is required.");
 
             var handler = new JwtSecurityTokenHandler();
             if (!handler.CanReadToken(subject_token))
-                return BadRequest(new { error = "invalid_token", error_description = "subject_token is not a valid JWT." });
+                throw new BadRequestException(message: "subject_token is not a valid JWT.");
 
             var jwt = handler.ReadJwtToken(subject_token);
 
@@ -50,7 +51,7 @@ namespace ASB.Admin.v1.Controllers
                         ?? jwt.Claims.FirstOrDefault(c => c.Type == "name")?.Value;
 
             if (string.IsNullOrEmpty(email))
-                return BadRequest(new { error = "invalid_token", error_description = "Token has no email claim." });
+                throw new BadRequestException(message: "Token has no email claim.");
 
             var dto = new GenerateTokenDto
             {

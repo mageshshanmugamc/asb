@@ -27,6 +27,28 @@ public class ErrorController : ControllerBase
 
             var ex = exceptionHandlerPathFeature?.Error;
 
+            // Handle validation errors with field-level detail
+            if (ex is ValidationException validationEx)
+            {
+                _logger.LogWarning(ex, "Validation failed: {Message}", ex.Message);
+
+                return new ObjectResult(new
+                {
+                    Title = "Validation failed",
+                    Details = ex.Message,
+                    StatusCode = 400,
+                    Instance = exceptionHandlerPathFeature?.Path,
+                    Errors = validationEx.Errors,
+                    Extensions = new Dictionary<string, object>
+                    {
+                        { "errorCode", (int)ErrorCodes.ErrorCodes.BadRequest }
+                    }
+                })
+                {
+                    StatusCode = 400
+                };
+            }
+
             // Use switch expression to map exception types
             var (errorCode, statusCode, title) = ex switch
             {

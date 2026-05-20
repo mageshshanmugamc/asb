@@ -20,7 +20,7 @@ public static class AgentRegistrationExtensions
         services.Configure<QdrantSettings>(configuration.GetSection("Qdrant"));
 
         var ollamaEndpoint = configuration["Ollama:Endpoint"] ?? "http://localhost:11434";
-        var chatModel = configuration["Ollama:ChatModel"] ?? "phi3:mini";
+        var chatModel = configuration["Ollama:ChatModel"] ?? "phi4-mini";
 
         // Register HttpClient for RagService (used for Qdrant + Ollama REST calls)
         services.AddHttpClient<IRagService, RagService>();

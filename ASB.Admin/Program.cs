@@ -6,6 +6,9 @@ using ASB.Agent.v1;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using ASB.Authorization;
+using ASB.ErrorHandler.v1.Extensions;
+using FluentValidation;
+using ASB.Admin.v1.Filters;
 
 
 
@@ -27,8 +30,13 @@ builder.Host.UseSerilog(); // replace default logger
 // Register database provider (SqlServer or Neo4j) based on config
 builder.Services.AddDatabase(builder.Configuration);
 
+// Register FluentValidation validators from this assembly
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<FluentValidationFilter>();
+});
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddCors(options =>
@@ -97,7 +105,7 @@ var app = builder.Build();
 
 app.UseCors("AllowAll");
 
-app.UseExceptionHandler("/error");
+app.UseAppErrorHandler();
 
 // if (app.Environment.IsDevelopment())
 // {
