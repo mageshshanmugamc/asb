@@ -63,6 +63,8 @@ public class ErrorController : ControllerBase
                 UnprocessableEntityException => ((int)ErrorCodes.ErrorCodes.UnprocessableEntity, 422, "Unprocessable entity"),
                 TooManyRequestException => ((int)ErrorCodes.ErrorCodes.TooManyRequests, 429, "Too many requests"),
                 NotImplementedException => ((int)ErrorCodes.ErrorCodes.NotImplemented, 501, "Not implemented"),
+                NotFoundException => ((int)ErrorCodes.ErrorCodes.NotFound, 404, "Resource not found"),
+
                
                 _ => ((int)ErrorCodes.ErrorCodes.InternalServerError, 500, "Unexpected error")
             };

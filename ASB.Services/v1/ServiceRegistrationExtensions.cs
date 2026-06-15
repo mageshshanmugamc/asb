@@ -14,6 +14,7 @@ public static class ServiceRegistrationExtensions
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IPolicyService, PolicyService>();
         services.AddScoped<IMenuService, MenuService>();
+        services.AddScoped<ICountryService, CountryService>();
 
         return services;
     }

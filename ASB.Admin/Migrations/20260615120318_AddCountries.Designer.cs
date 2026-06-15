@@ -4,6 +4,7 @@ using ASB.Repositories.v1.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ASB.Admin.Migrations
 {
     [DbContext(typeof(AsbContext))]
-    partial class AsbContextModelSnapshot : ModelSnapshot
+    [Migration("20260615120318_AddCountries")]
+    partial class AddCountries
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -250,15 +253,6 @@ namespace ASB.Admin.Migrations
                             Name = "Menus",
                             ParentMenuId = 4,
                             Route = "/settings/menus"
-                        },
-                        new
-                        {
-                            Id = 15,
-                            DisplayOrder = 4,
-                            Icon = "public",
-                            Name = "Countries",
-                            ParentMenuId = 4,
-                            Route = "/settings/country"
                         });
                 });
 
@@ -465,12 +459,6 @@ namespace ASB.Admin.Migrations
                         {
                             RoleId = 1,
                             MenuId = 14,
-                            PermissionLevel = "View"
-                        },
-                        new
-                        {
-                            RoleId = 1,
-                            MenuId = 15,
                             PermissionLevel = "View"
                         },
                         new

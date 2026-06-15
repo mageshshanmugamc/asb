@@ -19,6 +19,8 @@ namespace ASB.Repositories.v1.Contexts
         public DbSet<Menu> Menus => Set<Menu>();
         public DbSet<RoleMenuPermission> RoleMenuPermissions => Set<RoleMenuPermission>();
 
+        public DbSet<Country> Countries => Set<Country>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<RolePolicy>().HasKey(rp => new { rp.RoleId, rp.PolicyId });
@@ -106,7 +108,8 @@ namespace ASB.Repositories.v1.Contexts
                 // Settings children
                 new Menu { Id = 11, Name = "General", Route = "/settings/general", Icon = "tune", DisplayOrder = 1, ParentMenuId = 4 },
                 new Menu { Id = 12, Name = "Security", Route = "/settings/security", Icon = "lock", DisplayOrder = 2, ParentMenuId = 4 },
-                new Menu { Id = 14, Name = "Menus", Route = "/settings/menus", Icon = "menu", DisplayOrder = 3, ParentMenuId = 4 }
+                new Menu { Id = 14, Name = "Menus", Route = "/settings/menus", Icon = "menu", DisplayOrder = 3, ParentMenuId = 4 },
+                new Menu { Id = 15, Name = "Countries", Route = "/settings/country", Icon = "public", DisplayOrder = 4, ParentMenuId = 4 }
             );
 
             // Seed RoleMenuPermissions
@@ -125,7 +128,8 @@ namespace ASB.Repositories.v1.Contexts
                 new RoleMenuPermission { RoleId = 1, MenuId = 11 },
                 new RoleMenuPermission { RoleId = 1, MenuId = 12 },
                 new RoleMenuPermission { RoleId = 1, MenuId = 13 },
-                new RoleMenuPermission { RoleId = 1, MenuId = 14 }
+                new RoleMenuPermission { RoleId = 1, MenuId = 14 },
+                new RoleMenuPermission { RoleId = 1, MenuId = 15 }
             );
             // Viewer → Dashboard only
             modelBuilder.Entity<RoleMenuPermission>().HasData(
@@ -151,6 +155,17 @@ namespace ASB.Repositories.v1.Contexts
                 new RoleMenuPermission { RoleId = 4, MenuId = 5 },
                 new RoleMenuPermission { RoleId = 4, MenuId = 9 },
                 new RoleMenuPermission { RoleId = 4, MenuId = 10 }
+            );
+
+            // Seed Countries
+            modelBuilder.Entity<Country>().HasData(
+                new Country { Id = 1, Name = "United States", Code = "US", Market = "North America" },
+                new Country { Id = 2, Name = "Canada", Code = "CA", Market = "North America" },
+                new Country { Id = 3, Name = "United Kingdom", Code = "UK", Market = "Europe" },
+                new Country { Id = 4, Name = "Germany", Code = "DE", Market = "Europe" },
+                new Country { Id = 5, Name = "France", Code = "FR", Market = "Europe" },
+                new Country { Id = 6, Name = "Japan", Code = "JP", Market = "Asia" },
+                new Country { Id = 7, Name = "Australia", Code = "AU", Market = "Oceania" }
             );
         }
     }

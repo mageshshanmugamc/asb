@@ -40,6 +40,7 @@ public static class DatabaseServiceExtensions
         services.AddScoped<IMenuRepository, MenuRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IPolicyRepository, PolicyRepository>();
+        services.AddScoped<ICountryRepository, CountryRepository>();
 
         return services;
     }
