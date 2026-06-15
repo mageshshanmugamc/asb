@@ -9,6 +9,7 @@ using ASB.Authorization;
 using ASB.ErrorHandler.v1.Extensions;
 using FluentValidation;
 using ASB.Admin.v1.Filters;
+using Microsoft.EntityFrameworkCore;
 
 
 
@@ -102,6 +103,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 var app = builder.Build();
+
+// Auto-apply pending EF Core migrations (creates the DB if it doesn't exist)
+if (app.Configuration["DatabaseProvider"]?.Equals("SqlServer", StringComparison.OrdinalIgnoreCase) == true)
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ASB.Repositories.v1.Contexts.AsbContext>();
+    db.Database.Migrate();
+}
 
 app.UseCors("AllowAll");
 

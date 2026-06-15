@@ -70,7 +70,7 @@ services:
       KC_DB_URL: "jdbc:sqlserver://asb-sqlserver:1433;databaseName=keycloakdb;encrypt=true;trustServerCertificate=true"
       KC_DB_USERNAME: keycloak_user
       KC_DB_PASSWORD: "KeycloakUser@123"
-      KC_HOSTNAME: http://localhost:5000/keycloak
+      KC_HOSTNAME: https://magesh.com/keycloak
       KC_HTTP_ENABLED: "true"
       KC_HOSTNAME_STRICT: "false"
       KC_HTTP_RELATIVE_PATH: /keycloak
@@ -84,6 +84,8 @@ services:
     image: asb-ui:latest
     pull_policy: never
     container_name: asb-ui
+    environment:
+      REACT_APP_BASE_URL: https://magesh.com
     ports:
       - "3001:80"
     networks:
@@ -98,14 +100,16 @@ services:
         condition: service_healthy
       asb-neo4j:
         condition: service_healthy
-      qdrant:
-        condition: service_healthy
+      # qdrant:
+      #   condition: service_healthy
+      # ollama:
+      #   condition: service_healthy
     environment:
       ConnectionStrings__AsbDatabase: "Server=asb-sqlserver;Database=asbdb;User Id=sa;Password=admin123!;TrustServerCertificate=True;"
-      Keycloak__Authority: "http://keycloak:8080/realms/asb-keycloak"
+      Keycloak__Authority: "https://magesh.com/keycloak/realms/asb-keycloak"
       Keycloak__ClientId: "asb-oidc-provider"
       Keycloak__RequireHttpsMetadata: "false"
-      Keycloak__AdminBaseUrl: "http://keycloak:8080"
+      Keycloak__AdminBaseUrl: "https://magesh.com/keycloak"
       Keycloak__AdminRealm: "asb-keycloak"
       Keycloak__AdminUsername: "admin"
       Keycloak__AdminPassword: "admin"
@@ -114,8 +118,8 @@ services:
       Neo4j__Uri: "bolt://asb-neo4j:7687"
       Neo4j__Username: "neo4j"
       Neo4j__Password: "neo4jpassword"
-      Ollama__Endpoint: "http://host.docker.internal:11434"
-      Ollama__ChatModel: "qwen2.5-coder:7b"
+      Ollama__Endpoint: "http://ollama:11434"
+      Ollama__ChatModel: "phi4-mini"
       Ollama__EmbeddingModel: "nomic-embed-text"
       Qdrant__Endpoint: "http://qdrant:6333"
       Qdrant__CollectionName: "asb_knowledge"
@@ -133,9 +137,12 @@ services:
       - asb-ui
       - asb-api
     ports:
-      - "5000:80"
+      - "443:443"
+      - "80:80"
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/certs/magesh.crt:/etc/nginx/ssl/magesh.crt:ro
+      - ./nginx/certs/magesh.key:/etc/nginx/ssl/magesh.key:ro
     networks:
       - asb-network
 
@@ -177,7 +184,7 @@ services:
           IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = 'keycloak_user')
             CREATE USER keycloak_user FOR LOGIN keycloak_user;
           IF IS_ROLEMEMBER('db_owner', 'keycloak_user') <> 1
-            ALTER ROLE db_owner ADD MEMBER keycloak_user;
+            ALTER ROLE db_owner ADD MEMBER key    cloak_user;
         ";
         echo "SQL init completed successfully.";
     restart: "no"
@@ -185,29 +192,64 @@ services:
       - asb-network
 
   # ── AI Agent Infrastructure ──────────────────────────────────────────────────
-  # Ollama runs on the host (not in Docker) — API reaches it via host.docker.internal:11434
-  # Models required on host: qwen2.5-coder:7b, nomic-embed-text
 
-  qdrant:
-    image: qdrant/qdrant:latest
-    container_name: qdrant
-    ports:
-      - "6333:6333"    # REST API
-      - "6334:6334"    # gRPC
-    volumes:
-      - qdrant_data:/qdrant/storage
-    healthcheck:
-      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/6333'"]
-      interval: 10s
-      timeout: 5s
-      retries: 20
-    networks:
-      - asb-network
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: ollama
+  #   hostname: ollama
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/tags || exit 1"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 20
+  #   networks:
+  #     - asb-network
+
+  # ollama-init:
+  #   image: ollama/ollama:latest
+  #   profiles: ["init"]
+  #   depends_on:
+  #     ollama:
+  #       condition: service_healthy
+  #   entrypoint: ["/bin/bash", "-c"]
+  #   command:
+  #     - |
+  #       echo "Pulling phi4-mini model...";
+  #       ollama pull phi4-mini;
+  #       echo "Pulling nomic-embed-text model...";
+  #       ollama pull nomic-embed-text;
+  #       echo "Ollama model pull completed.";
+  #   environment:
+  #     OLLAMA_HOST: "http://ollama:11434"
+  #   restart: "no"
+  #   networks:
+  #     - asb-network
+
+  # qdrant:
+  #   image: qdrant/qdrant:latest
+  #   container_name: qdrant
+  #   ports:
+  #     - "6333:6333"    # REST API
+  #     - "6334:6334"    # gRPC
+  #   volumes:
+  #     - qdrant_data:/qdrant/storage
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/6333'"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 20
+  #   networks:
+  #     - asb-network
 
 volumes:
   sql_data:
   neo4j_data:
-  qdrant_data:
+  # qdrant_data:
+  # ollama_data:
 
 networks:
   asb-network:
