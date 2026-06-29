@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using ASB.Authorization;
 using ASB.ErrorHandler.v1.Extensions;
+using ASB.Notifier.v1;
 using FluentValidation;
 using ASB.Admin.v1.Filters;
 using Microsoft.EntityFrameworkCore;
@@ -46,10 +47,19 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin()
               .AllowAnyMethod()
               .AllowAnyHeader());
+
+    options.AddPolicy("SignalR", policy =>
+        policy.SetIsOriginAllowed(_ => true)
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials());
 });
 
 
 builder.Services.AddApplicationServices();
+
+// Register SignalR and notification services
+builder.Services.AddNotifierServices();
 
 // Register AI Agent services (Semantic Kernel + Ollama + Qdrant)
 builder.Services.AddAgentServices(builder.Configuration);
@@ -128,5 +138,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Map SignalR hub endpoint
+app.MapHub<ASB.Notifier.v1.Hubs.NotificationHub>("/hubs/notifications")
+   .RequireCors("SignalR");
 
 app.Run();

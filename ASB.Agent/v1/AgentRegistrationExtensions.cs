@@ -23,10 +23,13 @@ public static class AgentRegistrationExtensions
         var chatModel = configuration["Ollama:ChatModel"] ?? "phi4-mini";
 
         // Register HttpClient for RagService (used for Qdrant + Ollama REST calls)
-        services.AddHttpClient<IRagService, RagService>();
+        services.AddHttpClient<IRagService, RagService>(client =>
+        {
+            client.Timeout = TimeSpan.FromMinutes(10);
+        });
 
         // Register Semantic Kernel with Ollama as the LLM provider
-        services.AddSingleton<Kernel>(sp =>
+        services.AddScoped<Kernel>(sp =>
         {
             var builder = Kernel.CreateBuilder();
 
@@ -36,6 +39,11 @@ public static class AgentRegistrationExtensions
                 modelId: chatModel,
                 endpoint: new Uri(ollamaEndpoint));
             #pragma warning restore SKEXP0070
+
+            // Increase Ollama HTTP timeout for slow CPU inference
+            builder.Services.ConfigureHttpClientDefaults(b =>
+                b.ConfigureHttpClient(c => c.Timeout = TimeSpan.FromMinutes(10)));
+
 
             // Register tool plugins so the LLM can call them
             var userService = sp.GetRequiredService<IUserService>();
@@ -53,6 +61,7 @@ public static class AgentRegistrationExtensions
 
         // Register the agent orchestrator
         services.AddScoped<IAgentService, AgentService>();
+        services.AddScoped<IPdfExtractionService, PdfExtractionService>();
 
         return services;
     }

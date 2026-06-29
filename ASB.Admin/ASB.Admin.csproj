@@ -27,6 +27,7 @@
     <ProjectReference Include="..\ASB.ErrorHandler\ASB.ErrorHandler.csproj" />
     <ProjectReference Include="..\ASB.Authorization\ASB.Authorization.csproj" />
     <ProjectReference Include="..\ASB.Agent\ASB.Agent.csproj" />
+    <ProjectReference Include="..\ASB.Notifier\ASB.Notifier.csproj" />
   </ItemGroup>
 
 </Project>

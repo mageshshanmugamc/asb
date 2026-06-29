@@ -1,4 +1,5 @@
 using ASB.Repositories.v1.Entities;
+using ASB.Repositories.v1.Models;
 
 namespace ASB.Repositories.v1.Interfaces
 {
@@ -7,6 +8,7 @@ namespace ASB.Repositories.v1.Interfaces
         Task<User?> GetUserByIdAsync(int id);
         Task<User?> GetUserByEmailAsync(string email);
         Task<IEnumerable<User>> GetAllUsersAsync();
+        Task<PagedResult<User>> GetAllUsersAsync(PaginationQuery query);
         Task<User> CreateUserAsync(User user);
         Task AddUserToGroupAsync(int userId, int userGroupId, string? assignedBy = null);
     }

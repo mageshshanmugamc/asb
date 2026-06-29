@@ -21,6 +21,30 @@ namespace ASB.Repositories.v1.Implementations
             .Include(u => u.UserGroupMappings)
             .ToListAsync();
 
+        public async Task<Models.PagedResult<User>> GetAllUsersAsync(Models.PaginationQuery pagination)
+        {
+            var query = _context.Users
+                .Include(u => u.UserGroupMappings)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(pagination.NameFilter))
+            {
+                query = query.Where(u => u.Username.Contains(pagination.NameFilter));
+            }
+
+            query = pagination.SortBy?.ToLowerInvariant() switch
+            {
+                "email" => pagination.IsDescending ? query.OrderByDescending(u => u.Email) : query.OrderBy(u => u.Email),
+                "id" => pagination.IsDescending ? query.OrderByDescending(u => u.Id) : query.OrderBy(u => u.Id),
+                _ => pagination.IsDescending ? query.OrderByDescending(u => u.Username) : query.OrderBy(u => u.Username),
+            };
+
+            var totalCount = await query.CountAsync();
+            var items = await query.Skip(pagination.Skip).Take(pagination.Take).ToListAsync();
+
+            return new Models.PagedResult<User> { Items = items, TotalCount = totalCount };
+        }
+
         public async Task<User> CreateUserAsync(User user)
         {
             _context.Users.Add(user);

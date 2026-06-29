@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ASB.Repositories\ASB.Repositories.csproj" />
+    <ProjectReference Include="..\ASB.Notifier\ASB.Notifier.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,0 +1,85 @@
+### PDF Ingestion Test Cases
+
+@baseUrl = http://localhost:5000/api/v1/agent
+
+### Test 1: Ingest PDF with default parameters
+# This will upload a PDF file with default chunk size and overlap
+# The source will be the filename without extension
+POST {{baseUrl}}/ingest/pdf
+Content-Type: multipart/form-data; boundary=----FormBoundary7MA4YWxkTrZu0gW
+
+------FormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="pdfFile"; filename="sample.pdf"
+Content-Type: application/pdf
+
+< ./sample.pdf
+------FormBoundary7MA4YWxkTrZu0gW--
+
+### Test 2: Ingest PDF with custom source name
+# This will upload a PDF and use a custom source identifier in the knowledge base
+POST {{baseUrl}}/ingest/pdf
+Content-Type: multipart/form-data; boundary=----FormBoundary7MA4YWxkTrZu0gW
+
+------FormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="pdfFile"; filename="sample.pdf"
+Content-Type: application/pdf
+
+< ./sample.pdf
+------FormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="source"
+
+my-knowledge-document
+------FormBoundary7MA4YWxkTrZu0gW--
+
+### Test 3: Ingest PDF with custom chunk parameters
+# This will upload a PDF with custom chunk size and overlap
+POST {{baseUrl}}/ingest/pdf
+Content-Type: multipart/form-data; boundary=----FormBoundary7MA4YWxkTrZu0gW
+
+------FormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="pdfFile"; filename="sample.pdf"
+Content-Type: application/pdf
+
+< ./sample.pdf
+------FormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="source"
+
+my-document
+------FormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="chunkSize"
+
+750
+------FormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="chunkOverlap"
+
+100
+------FormBoundary7MA4YWxkTrZu0gW--
+
+### Test 4: Search the knowledge base
+# After ingesting PDFs, you can search for content
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{
+  "message": "search term from your PDF"
+}
+
+### Test 5: Chat with RAG (using ingested PDF)
+# The agent will use RAG to find relevant content from ingested PDFs
+POST {{baseUrl}}/chat
+Content-Type: application/json
+
+{
+  "message": "Ask a question about the content in your ingested PDF"
+}
+
+### Test 6: Ingest plain text (existing endpoint for reference)
+POST {{baseUrl}}/ingest
+Content-Type: application/json
+
+{
+  "content": "This is some test content that will be chunked and stored in the knowledge base.",
+  "source": "test-document",
+  "chunkSize": 500,
+  "chunkOverlap": 50
+}

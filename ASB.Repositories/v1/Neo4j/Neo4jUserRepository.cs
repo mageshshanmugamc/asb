@@ -2,6 +2,7 @@ namespace ASB.Repositories.v1.Neo4j;
 
 using ASB.Repositories.v1.Entities;
 using ASB.Repositories.v1.Interfaces;
+using ASB.Repositories.v1.Models;
 using global::Neo4j.Driver;
 
 public class Neo4jUserRepository : IUserRepository
@@ -62,6 +63,11 @@ public class Neo4jUserRepository : IUserRepository
             users.Add(user);
         }
         return users;
+    }
+
+    public Task<PagedResult<User>> GetAllUsersAsync(PaginationQuery query)
+    {
+        throw new NotSupportedException("Paginated query is not supported for Neo4j. Use the SQL repository.");
     }
 
     public async Task<User> CreateUserAsync(User user)

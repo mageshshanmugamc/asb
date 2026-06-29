@@ -1,17 +1,23 @@
 namespace ASB.Services.v1.Implementations
 {
     using System.Collections.Generic;
+    using ASB.Notifier.v1.Interfaces;
+    using ASB.Notifier.v1.Models;
     using ASB.Repositories.v1.Entities;
     using ASB.Repositories.v1.Interfaces;
+    using ASB.Repositories.v1.Models;
     using ASB.Services.v1.Dtos;
     using ASB.Services.v1.Interfaces;
 
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        public UserService(IUserRepository userRepository)  
+        private readonly INotificationService _notificationService;
+
+        public UserService(IUserRepository userRepository, INotificationService notificationService)
         {
             _userRepository = userRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<IEnumerable<UserDto>> GetUsers()
@@ -29,6 +35,22 @@ namespace ASB.Services.v1.Implementations
                 });
             }
             return userDtos;
+        }
+
+        public async Task<PagedResult<UserDto>> GetUsersAsync(PaginationQuery query)
+        {
+            var result = await _userRepository.GetAllUsersAsync(query);
+            return new PagedResult<UserDto>
+            {
+                TotalCount = result.TotalCount,
+                Items = result.Items.Select(user => new UserDto
+                {
+                    Id = user.Id,
+                    Username = user.Username,
+                    Email = user.Email,
+                    UserGroupIds = user.UserGroupMappings.Select(ugm => ugm.UserGroupId).ToList()
+                })
+            };
         }
 
         public async Task<UserDto> CreateUserAsync(CreateUserDto dto)
@@ -51,13 +73,22 @@ namespace ASB.Services.v1.Implementations
                 await _userRepository.AddUserToGroupAsync(created.Id, groupId);
             }
 
-            return new UserDto
+            var userDto = new UserDto
             {
                 Id = created.Id,
                 Username = created.Username,
                 Email = created.Email,
                 UserGroupIds = dto.UserGroupIds
             };
+
+            await _notificationService.NotifyUserCreatedAsync(new UserCreatedNotification
+            {
+                UserId = created.Id,
+                Username = created.Username,
+                Email = created.Email
+            });
+
+            return userDto;
         }
 
         public async Task AddUserToGroupAsync(int userId, int userGroupId)

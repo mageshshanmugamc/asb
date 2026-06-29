@@ -1,5 +1,6 @@
 namespace ASB.Admin.Tests.Services;
 
+using ASB.Notifier.v1.Interfaces;
 using ASB.Repositories.v1.Entities;
 using ASB.Repositories.v1.Interfaces;
 using ASB.Services.v1.Dtos;
@@ -10,12 +11,14 @@ using Xunit;
 public class UserServiceTests
 {
     private readonly Mock<IUserRepository> _userRepositoryMock;
+    private readonly Mock<INotificationService> _notificationServiceMock;
     private readonly UserService _service;
 
     public UserServiceTests()
     {
         _userRepositoryMock = new Mock<IUserRepository>();
-        _service = new UserService(_userRepositoryMock.Object);
+        _notificationServiceMock = new Mock<INotificationService>();
+        _service = new UserService(_userRepositoryMock.Object, _notificationServiceMock.Object);
     }
 
     [Fact]

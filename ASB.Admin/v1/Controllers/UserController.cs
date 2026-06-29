@@ -21,10 +21,16 @@ namespace ASB.Admin.v1.Controllers
 
         [HttpGet]
         [AsbAuthorize(Policies.ReadOnly)]
-        public async Task<IActionResult> GetUsers()
+        public async Task<IActionResult> GetUsers([FromQuery] PaginatedQueryParams query)
         {
-            var users = await userService.GetUsers();
-            return Ok(UserResponse.DtoListToUsersList(users));
+            var result = await userService.GetUsersAsync(query.ToPaginationQuery());
+            return Ok(new PagedResponse<UserResponse>
+            {
+                Items = result.Items.Select(UserResponse.DtoToUsers),
+                TotalCount = result.TotalCount,
+                Skip = query.Skip,
+                Take = query.Take
+            });
         }
 
         [HttpPost]
