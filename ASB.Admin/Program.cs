@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using ASB.Authorization;
 using ASB.ErrorHandler.v1.Extensions;
+using ASB.Admin.v1.Extensions;
 using ASB.Notifier.v1;
 using FluentValidation;
 using ASB.Admin.v1.Filters;
@@ -43,12 +44,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader());
-
-    options.AddPolicy("SignalR", policy =>
+    options.AddDefaultPolicy(policy =>
         policy.SetIsOriginAllowed(_ => true)
               .AllowAnyMethod()
               .AllowAnyHeader()
@@ -66,6 +62,9 @@ builder.Services.AddAgentServices(builder.Configuration);
 
 // Register policy-based authorization
 builder.Services.AddPolicyAuthorization();
+
+// Register rate limiting
+builder.Services.AddAppRateLimiting();
 
 //Swagger configuration
 // Configure Swagger with authentication
@@ -122,7 +121,8 @@ if (app.Configuration["DatabaseProvider"]?.Equals("SqlServer", StringComparison.
     db.Database.Migrate();
 }
 
-app.UseCors("AllowAll");
+app.UseRouting();
+app.UseCors();
 
 app.UseAppErrorHandler();
 
@@ -134,6 +134,8 @@ app.UseAppErrorHandler();
 
 // app.UseHttpsRedirection();
 
+app.UseAppRateLimiting();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -141,6 +143,9 @@ app.MapControllers();
 
 // Map SignalR hub endpoint
 app.MapHub<ASB.Notifier.v1.Hubs.NotificationHub>("/hubs/notifications")
-   .RequireCors("SignalR");
+   .RequireCors(c => c.SetIsOriginAllowed(_ => true)
+                      .AllowAnyMethod()
+                      .AllowAnyHeader()
+                      .AllowCredentials());
 
 app.Run();

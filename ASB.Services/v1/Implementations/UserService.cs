@@ -9,15 +9,18 @@ namespace ASB.Services.v1.Implementations
     using ASB.Services.v1.Dtos;
     using ASB.Services.v1.Interfaces;
 
+    /// <summary>
+    /// Implementation of the IUserService interface.
+    /// </summary>
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        private readonly INotificationService _notificationService;
+        private readonly IUserNotificationService _userNotificationService;
 
-        public UserService(IUserRepository userRepository, INotificationService notificationService)
+        public UserService(IUserRepository userRepository, IUserNotificationService userNotificationService)
         {
             _userRepository = userRepository;
-            _notificationService = notificationService;
+            _userNotificationService = userNotificationService;
         }
 
         public async Task<IEnumerable<UserDto>> GetUsers()
@@ -81,7 +84,7 @@ namespace ASB.Services.v1.Implementations
                 UserGroupIds = dto.UserGroupIds
             };
 
-            await _notificationService.NotifyUserCreatedAsync(new UserCreatedNotification
+            await _userNotificationService.NotifyUserCreatedAsync(new UserCreatedNotification
             {
                 UserId = created.Id,
                 Username = created.Username,
@@ -112,6 +115,21 @@ namespace ASB.Services.v1.Implementations
                 Email = user.Email,
                 UserGroupIds = user.UserGroupMappings.Select(ugm => ugm.UserGroupId).ToList()
             };
+        }
+
+        public async Task DeleteUserAsync(int id)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id) ?? throw new KeyNotFoundException($"User with Id {id} not found.");
+
+            // Assuming there's a method to delete the user in the repository
+            await _userRepository.DeleteUserAsync(id);
+
+            await _userNotificationService.NotifyUserDeletedAsync(new UserDeletedNotification
+            {
+                UserId = user.Id,
+                Username = user.Username,
+                Email = user.Email
+                }) ;
         }
     }
 }

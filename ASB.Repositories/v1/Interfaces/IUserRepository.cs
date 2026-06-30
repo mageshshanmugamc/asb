@@ -11,5 +11,7 @@ namespace ASB.Repositories.v1.Interfaces
         Task<PagedResult<User>> GetAllUsersAsync(PaginationQuery query);
         Task<User> CreateUserAsync(User user);
         Task AddUserToGroupAsync(int userId, int userGroupId, string? assignedBy = null);
+
+        Task DeleteUserAsync(int id);
     }
 }

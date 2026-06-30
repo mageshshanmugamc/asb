@@ -5,6 +5,9 @@ namespace ASB.Repositories.v1.Implementations
     using ASB.Repositories.v1.Interfaces;
     using Microsoft.EntityFrameworkCore;
 
+    /// <summary>
+    /// Represents a repository for managing user data in the database.
+    /// </summary>
     public class UserRepository : IUserRepository
     {
         private readonly AsbContext _context;
@@ -75,5 +78,15 @@ namespace ASB.Repositories.v1.Implementations
             .Select(ugm => ugm.User)
             .Include(u => u.UserGroupMappings)
             .ToListAsync();
+
+        public async Task DeleteUserAsync(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user is null)
+                throw new KeyNotFoundException($"User with Id {id} not found.");
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+        }
     }
 }

@@ -13,5 +13,7 @@ namespace ASB.Services.v1.Interfaces
         Task AddUserToGroupAsync(int userId, int userGroupId);
 
         Task<UserDto> GetUserByIdAsync(int id);
+
+        Task DeleteUserAsync(int id);
     }
 }

@@ -150,4 +150,17 @@ public class Neo4jUserRepository : IUserRepository
         return users;
     }
 
+    public async Task DeleteUserAsync(int id)
+    {
+        await using var session = _factory.OpenSession();
+        var result = await session.RunAsync(
+            @"MATCH (u:User {id: $id})
+              DETACH DELETE u",
+            new { id });
+
+        var summary = await result.ConsumeAsync();
+        if (summary.Counters.NodesDeleted == 0)
+            throw new KeyNotFoundException($"User with Id {id} not found.");
+    }
+
 }
