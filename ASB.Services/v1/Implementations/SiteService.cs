@@ -54,7 +54,10 @@ namespace ASB.Services.v1.Implementations
             };
 
             var createdSite = await _siteRepository.CreateSiteAsync(site);
-            await _siteNotificationService.NotifySiteCreatedAsync(createdSite.Name);
+            await _siteNotificationService.NotifySiteCreatedAsync(new SiteCreatedNotification
+            {
+                SiteName = createdSite.Name
+            });
 
             return new SiteDto
             {

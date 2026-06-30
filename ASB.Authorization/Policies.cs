@@ -9,4 +9,7 @@ public static class Policies
     public const string ReadOnly = "ReadOnly";
     public const string ManageUsers = "ManageUsers";
     public const string AuditAccess = "AuditAccess";
+
+    public const string CreateSite = "CreateSite";
+    public const string ReadSite = "ReadSite";
 }

@@ -19,6 +19,7 @@ public static class NotifierRegistrationExtensions
         services.AddSignalR();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IUserNotificationService, UserNotificationService>();
+        services.AddScoped<ISiteNotificationService, SiteNotificationService>();
         return services;
     }
 }

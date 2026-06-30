@@ -33,5 +33,18 @@ namespace ASB.Admin.v1.Controllers
                 Take = query.Take
             });
         }
+        [HttpPost]
+        [AsbAuthorize(Policies.FullAccess)]
+        public async Task<IActionResult> CreateSite([FromBody] CreateSiteRequest request)
+            {
+                var dto = new CreateSiteDto
+                {
+                    Name = request.Name,
+                    Location = request.Location
+                };
+
+                var site = await siteService.CreateSiteAsync(dto);
+                return CreatedAtAction(nameof(GetSites), new { id = site.Id }, SiteResponse.DtoToSites(site));
+            }
     }
 }
