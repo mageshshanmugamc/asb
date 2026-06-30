@@ -42,7 +42,15 @@ namespace ASB.Services.v1.Implementations
 
         public async Task<PagedResult<UserDto>> GetUsersAsync(PaginationQuery query)
         {
-            var result = await _userRepository.GetAllUsersAsync(query);
+            var repoQuery = new ASB.Repositories.v1.Models.PaginationQuery
+            {
+                Skip = query.Skip,
+                Take = query.Take,
+                SortBy = query.SortBy,
+                IsDescending = query.IsDescending,
+                NameFilter = query.NameFilter
+            };
+            var result = await _userRepository.GetAllUsersAsync(repoQuery);
             return new PagedResult<UserDto>
             {
                 TotalCount = result.TotalCount,

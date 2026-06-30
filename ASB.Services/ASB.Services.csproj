@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\ASB.Repositories\ASB.Repositories.csproj" />
     <ProjectReference Include="..\ASB.Notifier\ASB.Notifier.csproj" />
+    <ProjectReference Include="..\ASB.Repositories\ASB.Repositories.csproj" />
   </ItemGroup>
 
   <ItemGroup>

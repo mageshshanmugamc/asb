@@ -11,13 +11,13 @@ using Xunit;
 public class UserServiceTests
 {
     private readonly Mock<IUserRepository> _userRepositoryMock;
-    private readonly Mock<INotificationService> _notificationServiceMock;
+    private readonly Mock<IUserNotificationService> _notificationServiceMock;
     private readonly UserService _service;
 
     public UserServiceTests()
     {
         _userRepositoryMock = new Mock<IUserRepository>();
-        _notificationServiceMock = new Mock<INotificationService>();
+        _notificationServiceMock = new Mock<IUserNotificationService>();
         _service = new UserService(_userRepositoryMock.Object, _notificationServiceMock.Object);
     }
 
